@@ -15,7 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    memset(buffer_src_file, 0, 256);
+    memset(buffer_src_file, 0, 256);
     connect(ui->openFile, SIGNAL(pressed()), this, SLOT(openFile()));
     connect(ui->begin, SIGNAL(pressed()), this, SLOT(begin()));
     connect(ui->saveAsButton, SIGNAL(pressed()), this, SLOT(chooseDestFile()));
@@ -110,7 +111,7 @@ void MainWindow::begin()
 {
     qDebug("begin decode");
     QString passwd = ui->passwd->text();
-    if (passwd.length() == 0)
+    if (passwd.length() == 0 || strlen(buffer_dest_file) == 0 || strlen(buffer_src_file) == 0)
     {
         qDebug("no passwd");
         return;

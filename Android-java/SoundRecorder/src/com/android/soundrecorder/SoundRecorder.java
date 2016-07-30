@@ -18,6 +18,8 @@ package com.android.soundrecorder;
 
 import java.io.File;
 
+import javax.security.auth.login.LoginException;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -188,14 +190,13 @@ class RemainingTimeCalculator {
 
 public class SoundRecorder extends Activity implements Button.OnClickListener,
 		RecorderWav.OnStateChangedListener {
-	static final String TAG = "SoundRecorder";
+	static final String TAG = "zxw";
 
 	WakeLock mWakeLock;
 
 	String mErrorUiMessage = null; // Some error messages are displayed in the
 
 	long mMaxFileSize = -1; // can be specified in the intent
-	RemainingTimeCalculator mRemainingTimeCalculator;
 
 	String mTimerFormat;
 	final Handler mHandler = new Handler();
@@ -206,6 +207,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	};
 
 	ImageButton mRecordButton;
+	ImageButton mPauseButton;
 	ImageButton mPlayButton;
 	ImageButton mStopButton;
 
@@ -216,22 +218,20 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	TextView mTimerView;
 
 	VUMeter mVUMeter;
-
+	Resources res = null;
 	private RecorderWav mRecorderWav = null;
 
 	@Override
 	public void onCreate(Bundle icycle) {
 		super.onCreate(icycle);
-		mRecorderWav = new RecorderWav();
-
 		setContentView(R.layout.main);
-		mRemainingTimeCalculator = new RemainingTimeCalculator();
-
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
 				"SoundRecorder");
-
+		res = getResources();
 		initResourceRefs();
+		
+		mRecorderWav = new RecorderWav();
 		mRecorderWav.setOnStateChangedListener(this);
 		updateUi();
 	}
@@ -250,7 +250,8 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mRecordButton = (ImageButton) findViewById(R.id.recordButton);
 		mPlayButton = (ImageButton) findViewById(R.id.playButton);
 		mStopButton = (ImageButton) findViewById(R.id.stopButton);
-
+		mPauseButton = (ImageButton) findViewById(R.id.pauseButton);
+		
 		mStateLED = (ImageView) findViewById(R.id.stateLED);
 		mStateMessage1 = (TextView) findViewById(R.id.stateMessage1);
 		mStateMessage2 = (TextView) findViewById(R.id.stateMessage2);
@@ -262,7 +263,8 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mRecordButton.setOnClickListener(this);
 		mPlayButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
-
+		mPauseButton.setOnClickListener(this);
+		
 		mTimerFormat = getResources().getString(R.string.timer_format);
 
 		//mVUMeter.setRecorder(mRecorder);
@@ -285,15 +287,19 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 * Handle the buttons.
 	 */
 	public void onClick(View button) {
-
+		Log.i(TAG, "onClick");
 		switch (button.getId()) {
 		case R.id.recordButton:
+			Log.i(TAG, "recordbutton..click");
 			mRecorderWav.startRecording();
-			mStopButton.setClickable(true);
-            mStateLED.setVisibility(View.VISIBLE);
             mStateLED.setImageResource(R.drawable.recording_led);
 			break;
 		case R.id.playButton:
+			
+			break;
+		case R.id.pauseButton:
+			Log.i(TAG, "pauseRecording..click");
+			mRecorderWav.pauseRecording();
 			break;
 		case R.id.stopButton:
 			mRecorderWav.stopRecording();
@@ -338,8 +344,8 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	private void updateTimerView() {
 		Resources res = getResources();
 		int state = mRecorderWav.getState();
-		Log.i("zxw", "update timervier");
-		boolean ongoing = state == RecorderWav.RECORDING_STATE;
+		//Log.i("zxw", "update timervier");
+		boolean ongoing = state == RecorderWav.RECORDING_STARTED;
 
 		mRecodeTime = mRecorderWav.getRecodTimeInSec();
 		String timeStr = String.format(mTimerFormat, mRecodeTime / 60, mRecodeTime % 60);
@@ -369,11 +375,26 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 * Shows/hides the appropriate child views for the new state.
 	 */
 	private void updateUi() {
-		Resources res = getResources();
 		switch (mRecorderWav.getState()) {
 		case Recorder.IDLE_STATE:
 			break;
-		case Recorder.RECORDING_STATE:
+		case RecorderWav.RECORDING_STARTED:
+//			Log.i(TAG, "..r")
+			mRecordButton.setClickable(false);
+			mPlayButton.setClickable(false);
+            mStateLED.setVisibility(View.VISIBLE);
+            
+			mPauseButton.setClickable(true);
+			mStopButton.setClickable(true);
+			break;
+		case RecorderWav.RECORDING_PAUSE_STATE:
+			mRecordButton.setClickable(false);
+			mPlayButton.setClickable(false);
+            mStateLED.setVisibility(View.INVISIBLE);
+            
+			mPauseButton.setClickable(true);
+			mStopButton.setClickable(true);
+			
 			break;
 		case Recorder.PLAYING_STATE:
 			break;

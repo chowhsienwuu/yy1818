@@ -131,16 +131,21 @@
                 android:layout_height="match_parent" 
                 style="@style/MediaButton"
                 android:src="@drawable/record" />
-    
-            <ImageButton android:id="@+id/playButton"
+              <ImageButton android:id="@+id/pauseButton"
                 android:layout_height="match_parent" 
                 style="@style/MediaButton"
-                android:src="@drawable/play" />
+                android:src="@drawable/pause" />
     
             <ImageButton android:id="@+id/stopButton"
                 android:layout_height="match_parent" 
                 style="@style/MediaButton"
                 android:src="@drawable/stop" />
+            <ImageButton android:id="@+id/playButton"
+                android:layout_height="match_parent" 
+                style="@style/MediaButton"
+                android:src="@drawable/play" />
+    
+
 
         </LinearLayout>
 

@@ -19,10 +19,11 @@ public class RecorderWav implements Runnable {
 	static final String SAMPLE_PREFIX = "RecorderWav";
 
 	public static final int IDLE_STATE = 0;
-	public static final int RECORDING_STATE = 1;
-
+	public static final int RECORDING_STARTED = 1;
 	public static final int RECORDING_ERROR_STATE = 2;
 	public static final int PLAYING_STATE = 3;
+	public static final int RECORDING_PAUSE_STATE = 4;
+	
 	int mState = IDLE_STATE;
 
 	public static final int NO_ERROR = 0;
@@ -93,30 +94,45 @@ public class RecorderWav implements Runnable {
 	public int getState() {
 		return mState;
 	}
-
-	public void startRecording() {
+	
+	public synchronized  void pauseRecording(){
+		//setState(RECORDING_PAUSE_STATE);
+		if (mState == RECORDING_STARTED){
+			setState(RECORDING_PAUSE_STATE);
+		}else if (mState == RECORDING_PAUSE_STATE){
+			setState(RECORDING_STARTED);
+		}
+	}
+	
+	
+	private void setState(int statue){
+		if (mState == statue){
+			return;
+		}
+		mState = statue;
+		signalStateChanged(mState);
+	}
+	
+	public synchronized void startRecording() {
 		try {
 			initFile();
-			mState = RECORDING_STATE;
-			signalStateChanged(RECORDING_STATE);
+			setState(RECORDING_STARTED);
 			mRecodThread.start();
 			audioRecord.startRecording();
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 			mState = RECORDING_ERROR_STATE;
-			signalStateChanged(RECORDING_ERROR_STATE);
+			setState(RECORDING_ERROR_STATE);
 		}
 	}
 
 	public void stopRecording() {
 		try {
 			audioRecord.stop(); // CHECK THIS FILE.
-			mState = IDLE_STATE;
-			signalStateChanged(IDLE_STATE);
+			setState(IDLE_STATE);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			mState = RECORDING_ERROR_STATE;
-			signalStateChanged(RECORDING_ERROR_STATE);
+			setState(RECORDING_ERROR_STATE);
 		}
 	}
 
@@ -151,9 +167,11 @@ public class RecorderWav implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		int getLen = 0;
-		while (mState == RECORDING_STATE) {
+		while (mState == RECORDING_STARTED || mState == RECORDING_PAUSE_STATE) {
 			getLen = audioRecord.read(mRecodBuffer, 0, bufferSizeInBytes);
-			if (getLen > 0) {
+			//audioRecord.setPositionNotificationPeriod(9);
+			//when paused , do not block read data but do not write into data file
+			if (getLen > 0 && mState != RECORDING_PAUSE_STATE){
 				try {
 					for (int i = 0; i < getLen; i++) {
 						mRecodBuffer[i] = (byte) (mRecodBuffer[i]);

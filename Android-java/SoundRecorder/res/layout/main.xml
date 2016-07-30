@@ -33,8 +33,9 @@
         <TextView android:id="@+id/timerView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="112dip"
+            android:textSize="70dip"
             android:layout_centerInParent="true"
+            android:text="@string/initTime"
             style="@android:style/TextAppearance.Large" />
 
         <LinearLayout android:id="@+id/stateMessage2Layout"
@@ -94,14 +95,10 @@
 
 
     
-        <RelativeLayout
+       <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            
-            <com.android.soundrecorder.VUMeter android:id="@+id/uvMeter"
-                android:layout_width="match_parent"
-                android:layout_height="280px"
-                android:layout_centerInParent="true" />
+            android:layout_height="match_parent">     
+
         </RelativeLayout>
 
     </FrameLayout>
@@ -112,13 +109,13 @@
          android:layout_height="wrap_content"
          android:scaleType="fitXY"/>
 
-                    
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dip"
+        android:layout_weight="0.17"
         android:background="@android:drawable/title_bar"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical" >
 
         <LinearLayout
             android:layout_marginTop="4dip"

@@ -217,7 +217,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	ProgressBar mStateProgressBar;
 	TextView mTimerView;
 
-	VUMeter mVUMeter;
 	Resources res = null;
 	private RecorderWav mRecorderWav = null;
 
@@ -231,8 +230,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		res = getResources();
 		initResourceRefs();
 		
-		mRecorderWav = new RecorderWav();
-		mRecorderWav.setOnStateChangedListener(this);
 		updateUi();
 	}
 
@@ -257,8 +254,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mStateMessage2 = (TextView) findViewById(R.id.stateMessage2);
 		mStateProgressBar = (ProgressBar) findViewById(R.id.stateProgressBar);
 		mTimerView = (TextView) findViewById(R.id.timerView);
-
-		mVUMeter = (VUMeter) findViewById(R.id.uvMeter);
 
 		mRecordButton.setOnClickListener(this);
 		mPlayButton.setOnClickListener(this);
@@ -291,6 +286,8 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		switch (button.getId()) {
 		case R.id.recordButton:
 			Log.i(TAG, "recordbutton..click");
+			mRecorderWav = new RecorderWav();
+			mRecorderWav.setOnStateChangedListener(this);
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
 			break;
@@ -341,14 +338,23 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 * progress bar.
 	 */
 	long mRecodeTime = 0;
+
 	private void updateTimerView() {
-		Resources res = getResources();
+		if (mRecorderWav == null) {
+			return;
+		}
+		
 		int state = mRecorderWav.getState();
 		//Log.i("zxw", "update timervier");
 		boolean ongoing = state == RecorderWav.RECORDING_STARTED;
 
 		mRecodeTime = mRecorderWav.getRecodTimeInSec();
-		String timeStr = String.format(mTimerFormat, mRecodeTime / 60, mRecodeTime % 60);
+		
+		int hour = (int)(mRecodeTime / 3600);
+		int sec = (int)(mRecodeTime % 60);
+		int min = (int)((mRecodeTime - 3600 * hour) / 60);
+
+		String timeStr = String.format(mTimerFormat, hour, min, sec);
 		mTimerView.setText(timeStr);
 		
 		if (mRecodeTime % 2 == 1){
@@ -356,6 +362,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		}else {
 			mStateLED.setVisibility(View.VISIBLE);
 		}
+		
 		updateTimeRemaining();
 
 		if (ongoing)
@@ -375,33 +382,32 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 * Shows/hides the appropriate child views for the new state.
 	 */
 	private void updateUi() {
+		if (mRecorderWav == null){
+			return;
+		}
 		switch (mRecorderWav.getState()) {
-		case Recorder.IDLE_STATE:
-			break;
+
 		case RecorderWav.RECORDING_STARTED:
-//			Log.i(TAG, "..r")
-			mRecordButton.setClickable(false);
-			mPlayButton.setClickable(false);
-            mStateLED.setVisibility(View.VISIBLE);
-            
-			mPauseButton.setClickable(true);
-			mStopButton.setClickable(true);
+			// Log.i(TAG, "..r")
+			// mRecordButton.setClickable(false);
+			// mPlayButton.setClickable(false);
+			mStateLED.setVisibility(View.VISIBLE);
+
+			// mPauseButton.setClickable(true);
+			// mStopButton.setClickable(true);
 			break;
 		case RecorderWav.RECORDING_PAUSE_STATE:
-			mRecordButton.setClickable(false);
-			mPlayButton.setClickable(false);
-            mStateLED.setVisibility(View.INVISIBLE);
-            
-			mPauseButton.setClickable(true);
-			mStopButton.setClickable(true);
-			
-			break;
-		case Recorder.PLAYING_STATE:
+			// mRecordButton.setClickable(false);
+			// mPlayButton.setClickable(false);
+			mStateLED.setVisibility(View.INVISIBLE);
+
+			// mPauseButton.setClickable(true);
+			// mStopButton.setClickable(true);
+
 			break;
 		}
 
 		updateTimerView();
-		mVUMeter.invalidate();
 	}
 
 	/*

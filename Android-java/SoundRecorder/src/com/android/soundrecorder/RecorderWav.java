@@ -6,9 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Date;
-
-import com.android.soundrecorder.Recorder.OnStateChangedListener;
-
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -16,16 +13,17 @@ import android.os.Environment;
 import android.util.Log;
 
 public class RecorderWav implements Runnable {
-	static final String SAMPLE_PREFIX = "RecorderWav";
-
+	private static final String TAG = "RecorderWav";
+	
 	public static final int IDLE_STATE = 0;
 	public static final int RECORDING_STARTED = 1;
 	public static final int RECORDING_ERROR_STATE = 2;
 	public static final int PLAYING_STATE = 3;
 	public static final int RECORDING_PAUSE_STATE = 4;
+	public static final int SUCCESS_SAVE_FILE = 5;
 	
 	int mState = IDLE_STATE;
-
+	
 	public static final int NO_ERROR = 0;
 	public static final int SDCARD_ACCESS_ERROR = 1;
 	public static final int INTERNAL_ERROR = 2;
@@ -51,9 +49,7 @@ public class RecorderWav implements Runnable {
 		if (mOnStateChangedListener != null)
 			mOnStateChangedListener.onError(error);
 	}
-	//
 
-	private static final String TAG = "RecorderWav";
 	private AudioRecord audioRecord;
 	private int channelConfiguration = AudioFormat.CHANNEL_IN_MONO; // mono
 	private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT; // pcm 16bit.
@@ -61,17 +57,26 @@ public class RecorderWav implements Runnable {
 	private int bufferSizeInBytes = -1;
 	private byte[] mRecodBuffer = null;
 	
-	private int mBytePerSec = 0; 
+	private int mBytePerSec = -1; 
 	private long wavdatalen = 0L; //how many byte write in.
 	
-	File mRecodingFile = null;
-	FileOutputStream mRecodOutputStream = null;
-	Thread mRecodThread = null;
+	private File mRecodingFile = null;
+	private FileOutputStream mRecodOutputStream = null;
+	private Thread mRecodThread = null;
 
+	/*
+	 * ;//44100 * 1(mono) * 2(pcm16) =176400 byte/sec
+	 *	0xFFFFFFFF == most == 4294967295
+	 * 24347S
+	 * 6hour WAV HOST .
+	 * 
+	 * 
+	 */
+	
 	public RecorderWav() {
 		bufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRate,
 				channelConfiguration, audioEncoding);
-		bufferSizeInBytes = 4096 * 10;
+		bufferSizeInBytes = 4096 * 10; // 
 		Log.i(TAG, "bufferSizeInBytes=" + bufferSizeInBytes); // 4096 byte.
 		audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				sampleRate, channelConfiguration, audioEncoding,
@@ -96,14 +101,12 @@ public class RecorderWav implements Runnable {
 	}
 	
 	public synchronized  void pauseRecording(){
-		//setState(RECORDING_PAUSE_STATE);
 		if (mState == RECORDING_STARTED){
 			setState(RECORDING_PAUSE_STATE);
 		}else if (mState == RECORDING_PAUSE_STATE){
 			setState(RECORDING_STARTED);
 		}
 	}
-	
 	
 	private void setState(int statue){
 		if (mState == statue){
@@ -121,14 +124,14 @@ public class RecorderWav implements Runnable {
 			audioRecord.startRecording();
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			mState = RECORDING_ERROR_STATE;
 			setState(RECORDING_ERROR_STATE);
 		}
 	}
 
-	public void stopRecording() {
+	public synchronized void stopRecording() {
 		try {
 			audioRecord.stop(); // CHECK THIS FILE.
+			audioRecord.release();
 			setState(IDLE_STATE);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
@@ -142,7 +145,7 @@ public class RecorderWav implements Runnable {
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		//
+
 		Date date = new Date();
 		mRecodingFile = new File(dir, "/" + date.getMonth() + "."
 				+ date.getDate() + "_" + date.getHours() + "."
@@ -155,12 +158,12 @@ public class RecorderWav implements Runnable {
 		}
 
 		try {
-			mRecodOutputStream.write(getWavHeader(9696999));
+			// just write the WAV HEAD!.
+			mRecodOutputStream.write(getWavHeader(1));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} // file write the head.
-
+		} 
 	}
 
 	@Override
@@ -169,7 +172,6 @@ public class RecorderWav implements Runnable {
 		int getLen = 0;
 		while (mState == RECORDING_STARTED || mState == RECORDING_PAUSE_STATE) {
 			getLen = audioRecord.read(mRecodBuffer, 0, bufferSizeInBytes);
-			//audioRecord.setPositionNotificationPeriod(9);
 			//when paused , do not block read data but do not write into data file
 			if (getLen > 0 && mState != RECORDING_PAUSE_STATE){
 				try {
@@ -205,7 +207,8 @@ public class RecorderWav implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// mRecodingFile.
+//		sta
+		wavdatalen = 0;
 	}
 
 	private byte[] getWavHeader(long totalAudioLen) {

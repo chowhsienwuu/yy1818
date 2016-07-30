@@ -30,6 +30,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.StatFs;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -186,16 +187,12 @@ class RemainingTimeCalculator {
 }
 
 public class SoundRecorder extends Activity implements Button.OnClickListener,
-		Recorder.OnStateChangedListener {
+		RecorderWav.OnStateChangedListener {
 	static final String TAG = "SoundRecorder";
 
 	WakeLock mWakeLock;
-	Recorder mRecorder;
+
 	String mErrorUiMessage = null; // Some error messages are displayed in the
-									// UI,
-									// not a dialog. This happens when a
-									// recording
-									// is interrupted for some reason.
 
 	long mMaxFileSize = -1; // can be specified in the intent
 	RemainingTimeCalculator mRemainingTimeCalculator;
@@ -228,9 +225,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mRecorderWav = new RecorderWav();
 
 		setContentView(R.layout.main);
-//		setContentView(R.)
-		mRecorder = new Recorder();
-		mRecorder.setOnStateChangedListener(this);
 		mRemainingTimeCalculator = new RemainingTimeCalculator();
 
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -238,7 +232,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 				"SoundRecorder");
 
 		initResourceRefs();
-
+		mRecorderWav.setOnStateChangedListener(this);
 		updateUi();
 	}
 
@@ -271,7 +265,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 
 		mTimerFormat = getResources().getString(R.string.timer_format);
 
-		mVUMeter.setRecorder(mRecorder);
+		//mVUMeter.setRecorder(mRecorder);
 	}
 
 	/*
@@ -296,41 +290,15 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		case R.id.recordButton:
 			mRecorderWav.startRecording();
 			mStopButton.setClickable(true);
-
+            mStateLED.setVisibility(View.VISIBLE);
+            mStateLED.setImageResource(R.drawable.recording_led);
 			break;
 		case R.id.playButton:
-			mRecorder.startPlayback();
 			break;
 		case R.id.stopButton:
 			mRecorderWav.stopRecording();
 			// mRecorder.stop();
 			break;
-		}
-	}
-
-	/*
-	 * Handle the "back" hardware key.
-	 */
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			switch (mRecorder.state()) {
-			case Recorder.IDLE_STATE:
-				if (mRecorder.sampleLength() > 0)
-					saveSample();
-				finish();
-				break;
-			case Recorder.PLAYING_STATE:
-				mRecorder.stop();
-				saveSample();
-				break;
-			case Recorder.RECORDING_STATE:
-				mRecorder.clear();
-				break;
-			}
-			return true;
-		} else {
-			return super.onKeyDown(keyCode, event);
 		}
 	}
 
@@ -366,8 +334,26 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 * Update the big MM:SS timer. If we are in playback, also update the
 	 * progress bar.
 	 */
+	long mRecodeTime = 0;
 	private void updateTimerView() {
+		Resources res = getResources();
+		int state = mRecorderWav.getState();
+		Log.i("zxw", "update timervier");
+		boolean ongoing = state == RecorderWav.RECORDING_STATE;
 
+		mRecodeTime = mRecorderWav.getRecodTimeInSec();
+		String timeStr = String.format(mTimerFormat, mRecodeTime / 60, mRecodeTime % 60);
+		mTimerView.setText(timeStr);
+		
+		if (mRecodeTime % 2 == 1){
+			mStateLED.setVisibility(View.INVISIBLE);
+		}else {
+			mStateLED.setVisibility(View.VISIBLE);
+		}
+		updateTimeRemaining();
+
+		if (ongoing)
+			mHandler.postDelayed(mUpdateTimer, 1000);
 	}
 
 	/*
@@ -384,8 +370,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 */
 	private void updateUi() {
 		Resources res = getResources();
-
-		switch (mRecorder.state()) {
+		switch (mRecorderWav.getState()) {
 		case Recorder.IDLE_STATE:
 			break;
 		case Recorder.RECORDING_STATE:

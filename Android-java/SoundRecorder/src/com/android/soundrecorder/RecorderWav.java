@@ -63,7 +63,8 @@ public class RecorderWav implements Runnable {
 	private File mRecodingFile = null;
 	private FileOutputStream mRecodOutputStream = null;
 	private Thread mRecodThread = null;
-
+	private String mPasswdword = null;
+	private EncryManager mEncryptionManager = null;
 	/*
 	 * ;//44100 * 1(mono) * 2(pcm16) =176400 byte/sec
 	 *	0xFFFFFFFF == most == 4294967295
@@ -73,10 +74,16 @@ public class RecorderWav implements Runnable {
 	 * 
 	 */
 	
-	public RecorderWav() {
+	public RecorderWav(String passwd) {
+		Log.i(TAG, "before new encrymanager");
+		mEncryptionManager = new EncryManager(passwd);
+		Log.i(TAG, "after new encrymanager");
+		
 		bufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRate,
 				channelConfiguration, audioEncoding);
 		bufferSizeInBytes = 4096 * 10; // 
+
+
 		Log.i(TAG, "bufferSizeInBytes=" + bufferSizeInBytes); // 4096 byte.
 		audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				sampleRate, channelConfiguration, audioEncoding,
@@ -176,9 +183,12 @@ public class RecorderWav implements Runnable {
 			//when paused , do not block read data but do not write into data file
 			if (getLen > 0 && mState != RECORDING_PAUSE_STATE){
 				try {
-					for (int i = 0; i < getLen; i++) {
-						mRecodBuffer[i] = (byte) (mRecodBuffer[i]);
-					}
+//					for (int i = 0; i < getLen; i++) {
+//						mRecodBuffer[i] = (byte) (mRecodBuffer[i]);
+//					}
+					Log.i(TAG, "..before encry");
+					mEncryptionManager.encryptionbyte(mRecodBuffer);
+					Log.i(TAG, "..end encry");
 					mRecodOutputStream.write(mRecodBuffer, 0, getLen);
 					wavdatalen += getLen;
 				} catch (IOException e) {
@@ -263,7 +273,9 @@ public class RecorderWav implements Runnable {
 		header[41] = (byte) ((totalAudioLen >> 8) & 0xff);
 		header[42] = (byte) ((totalAudioLen >> 16) & 0xff);
 		header[43] = (byte) ((totalAudioLen >> 24) & 0xff);
-
+		
+		mEncryptionManager.encryptionbyte(header);
+		
 		return header;
 	}
 

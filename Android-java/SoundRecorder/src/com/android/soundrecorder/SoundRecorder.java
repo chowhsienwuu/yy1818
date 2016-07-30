@@ -22,11 +22,13 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Calculates remaining recording time based on available disk space and
@@ -201,13 +203,15 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	TextView mStateMessage2;
 	ProgressBar mStateProgressBar;
 	TextView mTimerView;
-
+	EditText mPasswdText = null;
+	
 	Resources res = null;
 	private RecorderWav mRecorderWav = null;
 
 	@Override
 	public void onCreate(Bundle icycle) {
 		super.onCreate(icycle);
+		Log.i(TAG, "onCreate");
 		setContentView(R.layout.main);
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
@@ -238,14 +242,14 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mStateMessage2 = (TextView) findViewById(R.id.stateMessage2);
 		mStateProgressBar = (ProgressBar) findViewById(R.id.stateProgressBar);
 		mTimerView = (TextView) findViewById(R.id.timerView);
-
+		mPasswdText = (EditText) findViewById(R.id.passwdEdit);
+		
 		mRecordButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
 		mPauseButton.setOnClickListener(this);
 		
 		mTimerFormat = getResources().getString(R.string.timer_format);
 
-		//mVUMeter.setRecorder(mRecorder);
 	}
 
 
@@ -257,7 +261,12 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		switch (button.getId()) {
 		case R.id.recordButton:
 			Log.i(TAG, "recordbutton..click");
-			mRecorderWav = new RecorderWav();
+			if (mPasswdText.getEditableText().length() == 0){
+				Toast.makeText(this, "input the passwd to encryption",
+						Toast.LENGTH_LONG).show();
+				return;
+			}
+			mRecorderWav = new RecorderWav(mPasswdText.getEditableText().toString());
 			mRecorderWav.setOnStateChangedListener(this);
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
@@ -267,21 +276,53 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 			mRecorderWav.pauseRecording();
 			break;
 		case R.id.stopButton:
+			Log.i(TAG, "stopButton..click");
 			mRecorderWav.stopRecording();
 			// mRecorder.stop();
 			break;
 		}
 	}
+	
+	@Override
+	protected void onRestart() {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onRestart");
+		super.onRestart();
+	}
+
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onResume");
+		super.onResume();
+	}
+
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onStart");
+		super.onStart();
+	}
+
+	@Override
+	public void onBackPressed() {
+		// TDO Auto-generated method stub
+		Log.d(TAG, "onBackPressed");
+		if (mRecorderWav != null){
+			mRecorderWav.stopRecording();
+		}
+		super.onBackPressed();
+	}
 
 	@Override
 	public void onStop() {
-
+		Log.d(TAG, "onStop");
 		super.onStop();
 	}
 
 	@Override
 	protected void onPause() {
-
+		Log.d(TAG, "onPause");
 		super.onPause();
 	}
 
@@ -290,10 +331,12 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 */
 	@Override
 	public void onDestroy() {
-
+		Log.d(TAG, "onDestroy");
+		if (mRecorderWav != null){
+			mRecorderWav.stopRecording();
+		}
 		super.onDestroy();
 	}
-
 
 	private long mRecodeTime = 0;
 
@@ -303,11 +346,11 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		}
 		
 		int state = mRecorderWav.getState();
-		//Log.i("zxw", "update timervier");
+
 		boolean ongoing = state == RecorderWav.RECORDING_STARTED;
 
 		mRecodeTime = mRecorderWav.getRecodTimeInSec();
-		
+		Log.i("zxw", "update timervier" + mRecodeTime + "..ongoing " + true);
 		int hour = (int)(mRecodeTime / 3600);
 		int sec = (int)(mRecodeTime % 60);
 		int min = (int)((mRecodeTime - 3600 * hour) / 60);
@@ -340,28 +383,31 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 * Shows/hides the appropriate child views for the new state.
 	 */
 	private void updateUi() {
-		if (mRecorderWav == null){
+		if (mRecorderWav == null) {
+			mRecordButton.setClickable(true);
+			mPauseButton.setClickable(false);
+			mStopButton.setClickable(false);
 			return;
 		}
 		switch (mRecorderWav.getState()) {
-
+		case RecorderWav.IDLE_STATE:
+			mStateLED.setVisibility(View.INVISIBLE);
+			mRecordButton.setClickable(true);
+			mPauseButton.setClickable(false);
+			mStopButton.setClickable(false);
+			break;
 		case RecorderWav.RECORDING_STARTED:
-			// Log.i(TAG, "..r")
-			// mRecordButton.setClickable(false);
-			// mPlayButton.setClickable(false);
 			mStateLED.setVisibility(View.VISIBLE);
-
-			// mPauseButton.setClickable(true);
-			// mStopButton.setClickable(true);
+			mRecordButton.setClickable(false);
+			mPauseButton.setClickable(true);
+			mStopButton.setClickable(true);
 			break;
 		case RecorderWav.RECORDING_PAUSE_STATE:
-			// mRecordButton.setClickable(false);
-			// mPlayButton.setClickable(false);
 			mStateLED.setVisibility(View.INVISIBLE);
 
-			// mPauseButton.setClickable(true);
-			// mStopButton.setClickable(true);
-
+			mRecordButton.setClickable(false);
+			mPauseButton.setClickable(true);
+			mStopButton.setClickable(true);
 			break;
 		}
 

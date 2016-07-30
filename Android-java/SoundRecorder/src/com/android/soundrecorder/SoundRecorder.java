@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2011 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.android.soundrecorder;
 
@@ -25,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.media.AudioTrack;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -208,7 +194,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 
 	ImageButton mRecordButton;
 	ImageButton mPauseButton;
-	ImageButton mPlayButton;
 	ImageButton mStopButton;
 
 	ImageView mStateLED;
@@ -229,7 +214,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 				"SoundRecorder");
 		res = getResources();
 		initResourceRefs();
-		
+				
 		updateUi();
 	}
 
@@ -245,7 +230,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 */
 	private void initResourceRefs() {
 		mRecordButton = (ImageButton) findViewById(R.id.recordButton);
-		mPlayButton = (ImageButton) findViewById(R.id.playButton);
 		mStopButton = (ImageButton) findViewById(R.id.stopButton);
 		mPauseButton = (ImageButton) findViewById(R.id.pauseButton);
 		
@@ -256,7 +240,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mTimerView = (TextView) findViewById(R.id.timerView);
 
 		mRecordButton.setOnClickListener(this);
-		mPlayButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
 		mPauseButton.setOnClickListener(this);
 		
@@ -265,18 +248,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		//mVUMeter.setRecorder(mRecorder);
 	}
 
-	/*
-	 * Make sure we're not recording music playing in the background, ask the
-	 * MediaPlaybackService to pause playback.
-	 */
-	private void stopAudioPlayback() {
-		// Shamelessly copied from MediaPlaybackService.java, which
-		// should be public, but isn't.
-		Intent i = new Intent("com.android.music.musicservicecommand");
-		i.putExtra("command", "pause");
-
-		sendBroadcast(i);
-	}
 
 	/*
 	 * Handle the buttons.
@@ -290,9 +261,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 			mRecorderWav.setOnStateChangedListener(this);
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
-			break;
-		case R.id.playButton:
-			
 			break;
 		case R.id.pauseButton:
 			Log.i(TAG, "pauseRecording..click");
@@ -318,13 +286,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	}
 
 	/*
-	 * If we have just recorded a smaple, this adds it to the media data base
-	 * and sets the result to the sample's URI.
-	 */
-	private void saveSample() {
-	}
-
-	/*
 	 * Called on destroy to unregister the SD card mount event receiver.
 	 */
 	@Override
@@ -333,11 +294,8 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		super.onDestroy();
 	}
 
-	/**
-	 * Update the big MM:SS timer. If we are in playback, also update the
-	 * progress bar.
-	 */
-	long mRecodeTime = 0;
+
+	private long mRecodeTime = 0;
 
 	private void updateTimerView() {
 		if (mRecorderWav == null) {

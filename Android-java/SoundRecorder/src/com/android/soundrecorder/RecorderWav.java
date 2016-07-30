@@ -156,7 +156,8 @@ public class RecorderWav implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
+//		mRecodingFile.
 		try {
 			// just write the WAV HEAD!.
 			mRecodOutputStream.write(getWavHeader(1));

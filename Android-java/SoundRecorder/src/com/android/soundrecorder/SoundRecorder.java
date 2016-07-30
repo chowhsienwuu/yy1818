@@ -218,9 +218,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	ProgressBar mStateProgressBar;
 	TextView mTimerView;
 
-	LinearLayout mExitButtons;
-	Button mAcceptButton;
-	Button mDiscardButton;
 	VUMeter mVUMeter;
 
 	private RecorderWav mRecorderWav = null;
@@ -231,7 +228,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mRecorderWav = new RecorderWav();
 
 		setContentView(R.layout.main);
-
+//		setContentView(R.)
 		mRecorder = new Recorder();
 		mRecorder.setOnStateChangedListener(this);
 		mRemainingTimeCalculator = new RemainingTimeCalculator();
@@ -266,16 +263,11 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mStateProgressBar = (ProgressBar) findViewById(R.id.stateProgressBar);
 		mTimerView = (TextView) findViewById(R.id.timerView);
 
-		mExitButtons = (LinearLayout) findViewById(R.id.exitButtons);
-		mAcceptButton = (Button) findViewById(R.id.acceptButton);
-		mDiscardButton = (Button) findViewById(R.id.discardButton);
 		mVUMeter = (VUMeter) findViewById(R.id.uvMeter);
 
 		mRecordButton.setOnClickListener(this);
 		mPlayButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
-		mAcceptButton.setOnClickListener(this);
-		mDiscardButton.setOnClickListener(this);
 
 		mTimerFormat = getResources().getString(R.string.timer_format);
 
@@ -312,13 +304,6 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		case R.id.stopButton:
 			mRecorderWav.stopRecording();
 			// mRecorder.stop();
-			break;
-		case R.id.acceptButton:
-			saveSample();
-			finish();
-			break;
-		case R.id.discardButton:
-			finish();
 			break;
 		}
 	}

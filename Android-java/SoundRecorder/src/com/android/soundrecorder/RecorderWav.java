@@ -183,11 +183,8 @@ public class RecorderWav implements Runnable {
 			//when paused , do not block read data but do not write into data file
 			if (getLen > 0 && mState != RECORDING_PAUSE_STATE){
 				try {
-//					for (int i = 0; i < getLen; i++) {
-//						mRecodBuffer[i] = (byte) (mRecodBuffer[i]);
-//					}
 					Log.i(TAG, "..before encry");
-					mEncryptionManager.encryptionbyte(mRecodBuffer);
+					mEncryptionManager.encryptionbyte(mRecodBuffer, getLen);
 					Log.i(TAG, "..end encry");
 					mRecodOutputStream.write(mRecodBuffer, 0, getLen);
 					wavdatalen += getLen;
@@ -218,8 +215,21 @@ public class RecorderWav implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		sta
+		
 		wavdatalen = 0;
+		
+//		File dir = new File(Environment.getExternalStorageDirectory()
+//				.getAbsolutePath(), "WAV_RECODE");
+//		if (!dir.exists()) {
+//			dir.mkdirs();
+//		}
+//
+//		Date date = new Date();
+//		File testFile = new File(dir, "/" + date.getMonth() + "."
+//				+ date.getDate() + "_" + date.getHours() + "."
+//				+ date.getMinutes() + "test001 .wav");
+//		mEncryptionManager.encryptionFile(mRecodingFile, testFile,
+//				mEncryptionManager.passwd2sha512("123456"));
 	}
 
 	private byte[] getWavHeader(long totalAudioLen) {
@@ -274,7 +284,7 @@ public class RecorderWav implements Runnable {
 		header[42] = (byte) ((totalAudioLen >> 16) & 0xff);
 		header[43] = (byte) ((totalAudioLen >> 24) & 0xff);
 		
-		mEncryptionManager.encryptionbyte(header);
+		//mEncryptionManager.encryptionbyte(header, 44);
 		
 		return header;
 	}

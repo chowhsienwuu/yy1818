@@ -53,7 +53,7 @@ public class EncryManager {
     }
 
 
-    private boolean encryptionFile(File file_in, File file_out, byte[] md5byte) {
+    public boolean encryptionFile(File file_in, File file_out, byte[] md5byte) {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(file_in);
@@ -70,10 +70,10 @@ public class EncryManager {
             e.printStackTrace();
         }
 
-        byte[] buffer_in = new byte[1024];
-        byte[] buffer_out = new byte[1024];
-        byte[] code_buffer = new byte[1024];
-        for (int j = 0; j < 1024; j++) {
+        byte[] buffer_in = new byte[4096 * 10];
+        byte[] buffer_out = new byte[4096 * 10];
+        byte[] code_buffer = new byte[4096 * 10];
+        for (int j = 0; j < 4096 * 10; j++) {
             code_buffer[j] = md5byte[j % 64];
         }
 
@@ -81,10 +81,14 @@ public class EncryManager {
         int i = 0;
         try {
             while ((len = fis.read(buffer_in)) > 0) {
-                for (i = 0; i < len; i++) {
-                    buffer_out[i] = (byte) (buffer_in[i] + code_buffer[i]);
-                }
-                fos.write(buffer_out, 0, len);
+//                for (i = 0; i < len; i++) {
+                    //buffer_out[i] = (byte) (buffer_in[i] + code_buffer[i]);
+//                    buffer_out[i] = (byte) (buffer_in[i] + mEnCryptionBigBuffer[i]);
+                    //mEnCryptionBigBuffer
+//                }
+            	encryptionbyte(buffer_in, len);
+                fos.write(buffer_in, 0, len);
+//                fos.write(buffer_out, 0, len);
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -154,41 +158,40 @@ public class EncryManager {
         return true;
     }
 
-
-
-
     private static void d(String a){
         System.out.println("zxw" + a);
         Log.i("zxw", "" + a);
     }
-    
-    
-    
+
     private byte[] mEnCryptionData = new byte[64];
 	private byte[] mEnCryptionBigBuffer = new byte[4096 * 10]; 
 	private int mPos = -1;
 	private int mEnCryLen = 40960;
 	
 	public EncryManager(String passwd) {
-		passwd = "123456";
+//		passwd = "123456";
 		mEnCryptionData = passwd2sha512(passwd);
 		for (int i = 0; i < mEnCryLen; i++){
-			mEnCryptionBigBuffer[i] = 111;
-//			mEnCryptionBigBuffer[i] = mEnCryptionData[i % 64];
+//			mEnCryptionBigBuffer[i] = 101;
+			mEnCryptionBigBuffer[i] = mEnCryptionData[i % 64];
 		}
 	}
     
-	public byte[] encryptionbyte(byte[] inout){
+	public byte[] encryptionbyte(byte[] inout, int len){
 		//for now data.
-		int len = inout.length < mEnCryLen ? inout.length : mEnCryLen;
+//		int len = inout.length < mEnCryLen ? inout.length : mEnCryLen;
 		for (mPos = 0; mPos < len; mPos++){
-			inout[mPos] = (byte) (inout[mPos] + mEnCryptionBigBuffer[mPos]);
+			if (mPos % 2 == 0){ 
+				inout[mPos] = (byte) (inout[mPos] + mEnCryptionBigBuffer[mPos]);
+			}else {
+				inout[mPos] = (byte) (inout[mPos] - mEnCryptionBigBuffer[mPos]);
+			}
 		}
 		
 		return inout;
 	}
 	
-    private byte[] passwd2sha512(String passwd) {
+    public byte[] passwd2sha512(String passwd) {
 
         byte[] bytesOfMessage = null;
         try {

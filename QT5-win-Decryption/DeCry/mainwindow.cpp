@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->passwd->setEchoMode(QLineEdit::Password);
     memset(buffer_src_file, 0, 256);
     memset(buffer_src_file, 0, 256);
     connect(ui->openFile, SIGNAL(pressed()), this, SLOT(openFile()));
@@ -58,8 +59,8 @@ void MainWindow::decryptionFile(const char *src, const char *dest, const char *k
     char buffer_decode[1024] = {};
     for (int i = 0; i < 1024; i++)
     {
-        buffer_decode[i] = 111;
-//        buffer_decode[i] = key[i % keylen];
+//        buffer_decode[i] = 111;
+        buffer_decode[i] = key[i % keylen];
     }
 
     int len = 0;
@@ -71,9 +72,20 @@ void MainWindow::decryptionFile(const char *src, const char *dest, const char *k
     qDebug("the cap is %d", cap);
     while (!file_src.atEnd())
     {
+        if (file_src.pos() < 44){
+            len =  file_src.read(buffer, 44);
+            file_dest.write(buffer, len);
+        }
+
         len =  file_src.read(buffer, keylen);
-        for (j = 0; j < len; j++){
-            buffer[j] -= buffer_decode[j];
+        for (j = 0; j < len; j++)
+        {
+            if (j % 2 == 0)
+            {
+                buffer[j] -= buffer_decode[j];
+            }else{
+                buffer[j] += buffer_decode[j];
+            }
         }
         file_dest.write(buffer, len);
 

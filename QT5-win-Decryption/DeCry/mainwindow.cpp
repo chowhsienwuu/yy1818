@@ -34,10 +34,10 @@ QByteArray MainWindow::passwd2sha512(const char *str)
     hash->addData(str);
     QByteArray result = hash->result();
 
-        for (int i = 0; i < result.length(); i++)
-        {
-            qDebug("%d", result.at(i));
-        }
+//        for (int i = 0; i < result.length(); i++)
+//        {
+//            qDebug("%d", result.at(i));
+//        }
 
     return result;
 }
@@ -59,7 +59,6 @@ void MainWindow::decryptionFile(const char *src, const char *dest, const char *k
     char buffer_decode[1024] = {};
     for (int i = 0; i < 1024; i++)
     {
-//        buffer_decode[i] = 111;
         buffer_decode[i] = key[i % keylen];
     }
 
@@ -72,6 +71,7 @@ void MainWindow::decryptionFile(const char *src, const char *dest, const char *k
     qDebug("the cap is %d", cap);
     while (!file_src.atEnd())
     {
+        //first 44 byte dont encry
         if (file_src.pos() < 44){
             len =  file_src.read(buffer, 44);
             file_dest.write(buffer, len);

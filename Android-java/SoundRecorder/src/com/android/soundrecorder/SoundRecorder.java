@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.StatFs;
@@ -187,7 +188,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	long mMaxFileSize = -1; // can be specified in the intent
 
 	String mTimerFormat;
-	final Handler mHandler = new Handler();
+	final Handler mLoopHandler = new Handler();
 	Runnable mUpdateTimer = new Runnable() {
 		public void run() {
 			updateTimerView();
@@ -258,6 +259,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 */
 	public void onClick(View button) {
 		Log.i(TAG, "onClick");
+		//mUiHandler.sendEmptyMessage(UI_HANDLER_TEST);
 		switch (button.getId()) {
 		case R.id.recordButton:
 			Log.i(TAG, "recordbutton..click");
@@ -268,6 +270,8 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 			}
 			mRecorderWav = new RecorderWav(mPasswdText.getEditableText().toString());
 			mRecorderWav.setOnStateChangedListener(this);
+			mRecorderWav.setHandler(mUiHandler);
+			//mRecorderWav.setMaxRecodTime(5);
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
 			break;
@@ -367,7 +371,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		updateTimeRemaining();
 
 		if (ongoing)
-			mHandler.postDelayed(mUpdateTimer, 1000);
+			mLoopHandler.postDelayed(mUpdateTimer, 1000);
 	}
 
 	/*
@@ -385,14 +389,17 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	private void updateUi() {
 		if (mRecorderWav == null) {
 			mRecordButton.setClickable(true);
+			mPasswdText.setEnabled(true);
 			mPauseButton.setClickable(false);
 			mStopButton.setClickable(false);
+			mStateLED.setVisibility(View.INVISIBLE);
 			return;
 		}
 		switch (mRecorderWav.getState()) {
 		case RecorderWav.IDLE_STATE:
 			mStateLED.setVisibility(View.INVISIBLE);
 			mRecordButton.setClickable(true);
+			mPasswdText.setEnabled(true);
 			mPauseButton.setClickable(false);
 			mStopButton.setClickable(false);
 			break;
@@ -401,10 +408,10 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 			mRecordButton.setClickable(false);
 			mPauseButton.setClickable(true);
 			mStopButton.setClickable(true);
+			mPasswdText.setEnabled(false);
 			break;
 		case RecorderWav.RECORDING_PAUSE_STATE:
 			mStateLED.setVisibility(View.INVISIBLE);
-
 			mRecordButton.setClickable(false);
 			mPauseButton.setClickable(true);
 			mStopButton.setClickable(true);
@@ -419,12 +426,59 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	 */
 	public void onStateChanged(int state) {
 
-		updateUi();
+//		updateUi();
+		mUiHandler.sendEmptyMessage(UI_HANDLER_UPDATE_UP);
 	}
-
 	/*
 	 * Called when MediaPlayer encounters an error.
 	 */
 	public void onError(int error) {
+//		mUiHandler.sendEmptyMessage(UI_HANDLER_TEST);
+//		mLoopHandler.sendEmptyMessage(FILE_REACH_SIZE);
+		Log.i(TAG, "..ui OnError" + error);
+		switch (error) {
+		case RecorderWav.ERROR_REACH_SIZE:
+			//now we start a another recod.
+			Log.i(TAG, "..ui..oneror..sendemptymsg file_reach_size");
+			mUiHandler.sendEmptyMessage(FILE_REACH_SIZE);
+			break;
+
+		default:
+			break;
+		}
 	}
+	/*
+	 * 
+	 */
+	public static final int UI_HANDLER_UPDATE_UP = 0X01;
+	public static final int SAVE_FILE_SUCCESS = 0x02;
+	public static final int FILE_REACH_SIZE = 0X3;
+	public static final int UI_HANDLER_TEST = 0X10;
+	private Handler mUiHandler = new  Handler(){
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			Log.i(TAG, ".uihandler ..get." + msg.what);
+			switch (msg.what) {
+			case UI_HANDLER_UPDATE_UP:
+				updateUi();
+				break;
+			case SAVE_FILE_SUCCESS:
+				Log.i(TAG, ".uihandler ..in save file success");
+				Toast.makeText(SoundRecorder.this, 
+						"save file success", Toast.LENGTH_LONG).show();
+			case FILE_REACH_SIZE:
+				Log.i(TAG, "..file_reach size callonClick");
+				mRecordButton.callOnClick();
+				break;
+			case UI_HANDLER_TEST:
+				Log.i(TAG, "..get a UI_HANDLER_TEST");
+			default:
+				break;
+			}
+			super.handleMessage(msg);
+		}
+	};
+	
 }

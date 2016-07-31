@@ -5,11 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.ObjectInputStream.GetField;
 import java.util.Date;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 
 public class RecorderWav implements Runnable {
@@ -24,10 +26,7 @@ public class RecorderWav implements Runnable {
 	
 	int mState = IDLE_STATE;
 	
-	public static final int NO_ERROR = 0;
-	public static final int SDCARD_ACCESS_ERROR = 1;
-	public static final int INTERNAL_ERROR = 2;
-	public static final int IN_CALL_RECORD_ERROR = 3;
+	public static final int ERROR_REACH_SIZE = 0X100;
 
 	public interface OnStateChangedListener {
 		public void onStateChanged(int state);
@@ -65,6 +64,37 @@ public class RecorderWav implements Runnable {
 	private Thread mRecodThread = null;
 	private String mPasswdword = null;
 	private EncryManager mEncryptionManager = null;
+	
+	//max 3g = 3 * 1024(M) * 1024(k) * 1024(B)
+	private static final long MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024;
+	//max 3hour 
+	private static final long MAX_FILE_TIME = 3 * 60 * 60;
+	
+	private long mMaxFileSize = MAX_FILE_SIZE; //in Bytes.
+	private long mMaxRecodTime = MAX_FILE_TIME; // in sec
+	
+	private Handler mHandler = null;
+	public void setHandler(Handler handler){
+		mHandler = handler;
+	}
+	
+	private void sendEmpMsg(int msg){
+		if (mHandler == null){
+			return;
+		}
+		switch (msg) {
+		case SoundRecorder.FILE_REACH_SIZE:
+			
+			break;
+		case SoundRecorder.SAVE_FILE_SUCCESS:
+			Log.i(TAG, "..in WAV.. save file success");
+			mHandler.sendEmptyMessage(SoundRecorder.SAVE_FILE_SUCCESS);
+			break;
+		default:
+			break;
+		}
+	}
+	
 	/*
 	 * ;//44100 * 1(mono) * 2(pcm16) =176400 byte/sec
 	 *	0xFFFFFFFF == most == 4294967295
@@ -92,6 +122,8 @@ public class RecorderWav implements Runnable {
 		mBytePerSec = sampleRate * 1 * 2 ;//44100 * 1(mono) * 2(pcm16) =176400
 		mRecodBuffer = new byte[bufferSizeInBytes];
 		mRecodThread = new Thread(this);
+		
+		Log.i(TAG, "..the max File size is " + mMaxFileSize);
 	}
 
 	public AudioRecord getAudioRecord() {
@@ -102,6 +134,18 @@ public class RecorderWav implements Runnable {
 		return wavdatalen / mBytePerSec;
 	}
 	
+	public long getRecodFileSize(){
+		return wavdatalen + 44;
+	}
+	
+	//in Byte
+	public void setMaxFileSize(long size){
+		mMaxFileSize = size < MAX_FILE_SIZE ? size : MAX_FILE_SIZE;
+	}
+	//in sec.
+	public void setMaxRecodTime(long time){
+		mMaxRecodTime = time < MAX_FILE_TIME ? time : MAX_FILE_TIME;
+	}
 	
 	public int getState() {
 		return mState;
@@ -177,21 +221,27 @@ public class RecorderWav implements Runnable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		int getLen = 0;
+		int getLen = 0; 
 		while (mState == RECORDING_STARTED || mState == RECORDING_PAUSE_STATE) {
 			getLen = audioRecord.read(mRecodBuffer, 0, bufferSizeInBytes);
 			//when paused , do not block read data but do not write into data file
 			if (getLen > 0 && mState != RECORDING_PAUSE_STATE){
 				try {
-					Log.i(TAG, "..before encry");
 					mEncryptionManager.encryptionbyte(mRecodBuffer, getLen);
-					Log.i(TAG, "..end encry");
 					mRecodOutputStream.write(mRecodBuffer, 0, getLen);
 					wavdatalen += getLen;
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			}
+			//CHECK IF THE TIME IS TO BIG SO TIME TO LONG ?.
+//			Log.i(TAG, "." + getRecodTimeInSec() + "." + mMaxRecodTime);
+//			Log.i(TAG, "." + getRecodFileSize() + "." + mMaxFileSize);
+			if (getRecodTimeInSec() >= mMaxRecodTime ){
+				stopRecording();
+				setError(ERROR_REACH_SIZE);
+				Log.e(TAG, ".reach file size or time stop recording");
 			}
 		}
 
@@ -217,7 +267,7 @@ public class RecorderWav implements Runnable {
 		}
 		
 		wavdatalen = 0;
-		
+		sendEmpMsg(SoundRecorder.SAVE_FILE_SUCCESS);
 //		File dir = new File(Environment.getExternalStorageDirectory()
 //				.getAbsolutePath(), "WAV_RECODE");
 //		if (!dir.exists()) {
@@ -227,7 +277,7 @@ public class RecorderWav implements Runnable {
 //		Date date = new Date();
 //		File testFile = new File(dir, "/" + date.getMonth() + "."
 //				+ date.getDate() + "_" + date.getHours() + "."
-//				+ date.getMinutes() + "test001 .wav");
+//				+ dat.getMinutes() + "test001 .wav");
 //		mEncryptionManager.encryptionFile(mRecodingFile, testFile,
 //				mEncryptionManager.passwd2sha512("123456"));
 	}

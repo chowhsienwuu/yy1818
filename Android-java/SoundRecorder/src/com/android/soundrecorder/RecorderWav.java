@@ -230,6 +230,7 @@ public class RecorderWav implements Runnable {
 		mRecodThread.setName(fileName);
 		mRecodThread.setPriority(Thread.MAX_PRIORITY);
 		mRecodingFile = new File(dir, "/" + fileName);
+		
 		try {
 			mRecodOutputStream = new FileOutputStream(mRecodingFile);
 		} catch (FileNotFoundException e) {

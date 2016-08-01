@@ -71,14 +71,12 @@ public class EncryManager {
         }
 
         byte[] buffer_in = new byte[4096 * 10];
-        byte[] buffer_out = new byte[4096 * 10];
         byte[] code_buffer = new byte[4096 * 10];
         for (int j = 0; j < 4096 * 10; j++) {
             code_buffer[j] = md5byte[j % 64];
         }
 
         int len = 0;
-        int i = 0;
         try {
             while ((len = fis.read(buffer_in)) > 0) {
 //                for (i = 0; i < len; i++) {
@@ -208,7 +206,6 @@ public class EncryManager {
             e.printStackTrace();
         }
         byte[] thedigest = md.digest(bytesOfMessage);
-        // d("..the md5 is " + thedigest.length);
 
 //         for (int i = 0; i < thedigest.length; i++) {
 //        	 d(" " + i + ":" + thedigest[i]);

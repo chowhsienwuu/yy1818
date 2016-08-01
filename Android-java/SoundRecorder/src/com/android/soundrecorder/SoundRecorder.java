@@ -271,7 +271,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 			mRecorderWav = new RecorderWav(mPasswdText.getEditableText().toString());
 			mRecorderWav.setOnStateChangedListener(this);
 			mRecorderWav.setHandler(mUiHandler);
-			//mRecorderWav.setMaxRecodTime(5);
+//			mRecorderWav.setMaxRecodTime(5);
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
 			break;
@@ -468,12 +468,14 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 				Log.i(TAG, ".uihandler ..in save file success");
 				Toast.makeText(SoundRecorder.this, 
 						"save file success", Toast.LENGTH_LONG).show();
+			     break;
 			case FILE_REACH_SIZE:
 				Log.i(TAG, "..file_reach size callonClick");
 				mRecordButton.callOnClick();
 				break;
 			case UI_HANDLER_TEST:
 				Log.i(TAG, "..get a UI_HANDLER_TEST");
+				break;
 			default:
 				break;
 			}

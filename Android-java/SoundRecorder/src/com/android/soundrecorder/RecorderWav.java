@@ -5,19 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.ObjectInputStream.GetField;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.Handler;
-import android.text.format.DateFormat;
 import android.util.Log;
-import android.widget.HorizontalScrollView;
 
 public class RecorderWav implements Runnable {
 	private static final String TAG = "RecorderWav";
@@ -67,7 +63,6 @@ public class RecorderWav implements Runnable {
 	private File mRecodingFile = null;
 	private FileOutputStream mRecodOutputStream = null;
 	private Thread mRecodThread = null;
-	private String mPasswdword = null;
 	private EncryManager mEncryptionManager = null;
 	
 	//max 3g = 3 * 1024(M) * 1024(k) * 1024(B)
@@ -232,6 +227,8 @@ public class RecorderWav implements Runnable {
 		Date date = new Date();
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss"); 
 		String fileName = formatter.format(date) + ".wav";
+		mRecodThread.setName(fileName);
+		mRecodThread.setPriority(Thread.MAX_PRIORITY);
 		mRecodingFile = new File(dir, "/" + fileName);
 		try {
 			mRecodOutputStream = new FileOutputStream(mRecodingFile);

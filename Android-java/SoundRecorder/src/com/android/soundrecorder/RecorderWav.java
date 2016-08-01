@@ -6,13 +6,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.ObjectInputStream.GetField;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.HorizontalScrollView;
 
 public class RecorderWav implements Runnable {
 	private static final String TAG = "RecorderWav";
@@ -189,7 +194,34 @@ public class RecorderWav implements Runnable {
 			setState(RECORDING_ERROR_STATE);
 		}
 	}
-
+	
+	private boolean renameRecodFileWithTimeLenth(){
+		String str = "LENTH";
+		long mRecodeTime = getRecodTimeInSec();
+		int hour = (int)(mRecodeTime / 3600);
+		int sec = (int)(mRecodeTime % 60);
+		int min = (int)((mRecodeTime - 3600 * hour) / 60);
+		
+		if (hour != 0){
+			str += hour;
+			str += "h";
+		}
+		if (min != 0){
+			str += min;
+			str += "min";
+		}
+		str += sec;
+		str += "s";
+		
+		StringBuilder oldPath = new StringBuilder(mRecodingFile.getAbsolutePath());
+		int index = oldPath.lastIndexOf(".wav");
+		oldPath.delete(index, index + 4);
+		oldPath.append(str + ".wav");
+		File newPath = new File(oldPath.toString());
+		
+		return mRecodingFile.renameTo(newPath);
+	}
+	
 	private void initFile() {
 		File dir = new File(Environment.getExternalStorageDirectory()
 				.getAbsolutePath(), "WAV_RECODE");
@@ -198,9 +230,9 @@ public class RecorderWav implements Runnable {
 		}
 
 		Date date = new Date();
-		mRecodingFile = new File(dir, "/" + date.getMonth() + "."
-				+ date.getDate() + "_" + date.getHours() + "."
-				+ date.getMinutes() + ".wav");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss"); 
+		String fileName = formatter.format(date) + ".wav";
+		mRecodingFile = new File(dir, "/" + fileName);
 		try {
 			mRecodOutputStream = new FileOutputStream(mRecodingFile);
 		} catch (FileNotFoundException e) {
@@ -208,7 +240,6 @@ public class RecorderWav implements Runnable {
 			e.printStackTrace();
 		}
 		
-//		mRecodingFile.
 		try {
 			// just write the WAV HEAD!.
 			mRecodOutputStream.write(getWavHeader(1));
@@ -266,6 +297,8 @@ public class RecorderWav implements Runnable {
 			e.printStackTrace();
 		}
 		
+		renameRecodFileWithTimeLenth();
+	
 		wavdatalen = 0;
 		sendEmpMsg(SoundRecorder.SAVE_FILE_SUCCESS);
 //		File dir = new File(Environment.getExternalStorageDirectory()

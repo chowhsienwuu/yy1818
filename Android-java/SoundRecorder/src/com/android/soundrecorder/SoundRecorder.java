@@ -354,7 +354,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		boolean ongoing = state == RecorderWav.RECORDING_STARTED;
 
 		mRecodeTime = mRecorderWav.getRecodTimeInSec();
-		Log.i("zxw", "update timervier" + mRecodeTime + "..ongoing " + true);
+//		Log.i("zxw", "update timervier" + mRecodeTime + "..ongoing " + true);
 		int hour = (int)(mRecodeTime / 3600);
 		int sec = (int)(mRecodeTime % 60);
 		int min = (int)((mRecodeTime - 3600 * hour) / 60);

@@ -116,7 +116,8 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 			mRecorderWav = new RecorderWav(mPasswdText.getEditableText().toString());
 			mRecorderWav.setOnStateChangedListener(this);
 			mRecorderWav.setHandler(mUiHandler);
-			mRecorderWav.setMaxRecodTime(5);
+//			mRecorderWav.setMaxRecodTime(5);
+//			mRecorderWav.setMaxFileSize(300 * 1024L);
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
 			break;

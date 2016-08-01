@@ -17,23 +17,16 @@ public class DiskSpaceRecyle implements Runnable {
 		if (!mWAVDirectory.exists()){
 			mWAVDirectory.mkdir();
 		}
-		
-		StatFs fs = new StatFs(mSDCardDirectory.getAbsolutePath());
-		long blocks = fs.getAvailableBlocks();
-		long blockSize = fs.getBlockSize();
-		mSDCardDirectory.getTotalSpace();
-		
-		
 	}
+	
 	public static final String TAG = "zxw";
 	private Thread mDiskSpaceRecyleThread = null;
 	private static DiskSpaceRecyle mInstance = new DiskSpaceRecyle();
-//	private boolean mIsRun = flase;
-	private long  mSleepTime = 3 * 1000; //1min to check once;
+	private long  mSleepTime = 180 * 1000; //3min to check once;
 	private File mSDCardDirectory = null;
 	private File mWAVDirectory = null;
-	private long mEmptySize = 5024678656L; // 500M 
-//	private long mEmptySize = 500 * 1024 * 1024 ; // 500M 
+//	private long mEmptySize = 6024678656L; // 500M 
+	private long mEmptySize = 500 * 1024 * 1024L ; // 500M 
 	
 	
 	public static DiskSpaceRecyle getInstance(){
@@ -48,9 +41,13 @@ public class DiskSpaceRecyle implements Runnable {
 		return mDiskSpaceRecyleThread.isAlive();
 	}
 	
-	
-	
-	
+	public boolean setEmpSize(long size){
+		if (size > mSDCardDirectory.getTotalSpace() || size < 0L){
+			return false;
+		}
+		mEmptySize = size;
+		return true;
+	}
 	
 	@Override
 	public void run() {
@@ -67,16 +64,12 @@ public class DiskSpaceRecyle implements Runnable {
 		}
 	}
 
-	private void doDiskCheck(){
-		StatFs fs = new StatFs(mSDCardDirectory.getAbsolutePath());
-		long blocks = fs.getAvailableBlocks();
-		long blockSize = fs.getBlockSize();
-		Log.i(TAG, "..fs.." + + blocks * blockSize / 1024. / 1024);
-//		Log.i(TAG, "..save sdcard " + mSDCardDirectory.getTotalSpace());
-//		Log.i(TAG, "..save sdcard wav" + mWAVDirectory.getTotalSpace());
-		
-		while (fs.getAvailableBlocks() * fs.getBlockSize() < mEmptySize){
-			if (!deleteOldestFile(mWAVDirectory)){
+	private void doDiskCheck() {
+//		Log.i(TAG, ".lanlan.avail " + mWAVDirectory.getFreeSpace()
+//				+ "..emtpsize " + mEmptySize);
+
+		while (mWAVDirectory.getFreeSpace() < mEmptySize) {
+			if (!deleteOldestFile(mWAVDirectory)) {
 				break;
 			}
 		}

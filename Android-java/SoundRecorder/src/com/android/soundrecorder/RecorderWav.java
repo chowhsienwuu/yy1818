@@ -66,9 +66,9 @@ public class RecorderWav implements Runnable {
 	private EncryManager mEncryptionManager = null;
 	
 	//max 3g = 3 * 1024(M) * 1024(k) * 1024(B)
-	private static final long MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024;
+	private static final long MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024L;
 	//max 3hour 
-	private static final long MAX_FILE_TIME = 3 * 60 * 60;
+	private static final long MAX_FILE_TIME = 3 * 60 * 60L;
 	
 	private long mMaxFileSize = MAX_FILE_SIZE; //in Bytes.
 	private long mMaxRecodTime = MAX_FILE_TIME; // in sec
@@ -131,11 +131,11 @@ public class RecorderWav implements Runnable {
 	}
 	
 	public long getRecodTimeInSec(){
-		return wavdatalen / mBytePerSec;
+		return ((long)wavdatalen) / mBytePerSec;
 	}
 	
 	public long getRecodFileSize(){
-		return wavdatalen + 44;
+		return wavdatalen + 44L;
 	}
 	
 	//in Byte
@@ -265,9 +265,10 @@ public class RecorderWav implements Runnable {
 				}
 			}
 			//CHECK IF THE TIME IS TO BIG SO TIME TO LONG ?.
-//			Log.i(TAG, "." + getRecodTimeInSec() + "." + mMaxRecodTime);
-//			Log.i(TAG, "." + getRecodFileSize() + "." + mMaxFileSize);
-			if (getRecodTimeInSec() >= mMaxRecodTime ){
+//			Log.i(TAG, "recodtimesec." + getRecodTimeInSec() + "." + mMaxRecodTime);
+//			Log.i(TAG, "recodfielsize." + getRecodFileSize() + "." + mMaxFileSize);
+			if (getRecodTimeInSec() >= mMaxRecodTime 
+					|| getRecodFileSize() >= mMaxFileSize){
 				stopRecording();
 				setError(ERROR_REACH_SIZE);
 				Log.e(TAG, ".reach file size or time stop recording");

@@ -163,7 +163,7 @@ public class EncryManager {
 
     private byte[] mEnCryptionData = new byte[64];
 	private byte[] mEnCryptionBigBuffer = new byte[4096 * 10]; 
-	private int mPos = -1;
+	private int mPos = 0;
 	private int mEnCryLen = 40960;
 	
 	public EncryManager(String passwd) {
@@ -177,13 +177,23 @@ public class EncryManager {
 	public byte[] encryptionbyte(byte[] inout, int len){
 		//for now data.
 //		int len = inout.length < mEnCryLen ? inout.length : mEnCryLen;
-		for (mPos = 0; mPos < len; mPos++){
-			if (mPos % 2 == 0){ 
-				inout[mPos] = (byte) (inout[mPos] + mEnCryptionBigBuffer[mPos]);
+//		if (len > mEnCryLen)
+		// if longer than mEnCryLen, just encrypti
+		len = len > mEnCryLen ? mEnCryLen : len;
+		int i = 0;
+		for (i = 0; i < len; i++){
+//			d("..mPos is " + mPos + ".i." + i + ". len :" + len);
+//			d("this (i + mPos) % mEnCryLen is " + ((i + mPos) % mEnCryLen));
+			if (i % 2 == 0){ 
+				inout[i] = (byte) (inout[i] + mEnCryptionBigBuffer[(i + mPos) % mEnCryLen]);
 			}else {
-				inout[mPos] = (byte) (inout[mPos] - mEnCryptionBigBuffer[mPos]);
+				inout[i] = (byte) (inout[i] - mEnCryptionBigBuffer[(i + mPos) % mEnCryLen]);
 			}
 		}
+		
+		//shift the window pos
+		mPos += len;
+		mPos %= mEnCryLen;
 		
 		return inout;
 	}

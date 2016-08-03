@@ -8,9 +8,12 @@ import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.content.Context;
+import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
@@ -73,6 +76,8 @@ public class RecorderWav implements Runnable {
 	private long mMaxFileSize = MAX_FILE_SIZE; //in Bytes.
 	private long mMaxRecodTime = MAX_FILE_TIME; // in sec
 	
+	private Context mContext = null;
+	
 	private Handler mHandler = null;
 	public void setHandler(Handler handler){
 		mHandler = handler;
@@ -104,7 +109,8 @@ public class RecorderWav implements Runnable {
 	 * 
 	 */
 	
-	public RecorderWav(String passwd) {
+	public RecorderWav(Context context, String passwd) {
+		mContext = context;
 		Log.i(TAG, "before new encrymanager");
 		mEncryptionManager = new EncryManager(passwd);
 		Log.i(TAG, "after new encrymanager");
@@ -217,6 +223,15 @@ public class RecorderWav implements Runnable {
 		return mRecodingFile.renameTo(newPath);
 	}
 	
+	private void scanFileAsync() {
+		Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+		
+		File dir = new File(Environment.getExternalStorageDirectory()
+				.getAbsolutePath(), "WAV_RECODE");
+		scanIntent.setData(Uri.fromFile(dir));
+		mContext.sendBroadcast(scanIntent);
+	}
+	
 	private void initFile() {
 		File dir = new File(Environment.getExternalStorageDirectory()
 				.getAbsolutePath(), "WAV_RECODE");
@@ -297,9 +312,10 @@ public class RecorderWav implements Runnable {
 		}
 		
 		renameRecodFileWithTimeLenth();
-	
+		scanFileAsync();
 		wavdatalen = 0;
 		sendEmpMsg(SoundRecorder.SAVE_FILE_SUCCESS);
+		
 //		File dir = new File(Environment.getExternalStorageDirectory()
 //				.getAbsolutePath(), "WAV_RECODE");
 //		if (!dir.exists()) {

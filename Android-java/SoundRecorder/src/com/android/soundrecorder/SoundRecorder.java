@@ -113,7 +113,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 						Toast.LENGTH_LONG).show();
 				return;
 			}
-			mRecorderWav = new RecorderWav(mPasswdText.getEditableText().toString());
+			mRecorderWav = new RecorderWav(this, mPasswdText.getEditableText().toString());
 			mRecorderWav.setOnStateChangedListener(this);
 			mRecorderWav.setHandler(mUiHandler);
 //			mRecorderWav.setMaxRecodTime(5);

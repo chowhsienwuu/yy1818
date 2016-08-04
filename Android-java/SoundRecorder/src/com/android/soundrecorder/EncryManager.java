@@ -45,16 +45,16 @@ public class EncryManager {
         }
 
         d("time001:" + new Date());
-        em.encryptionFile(file_in, file_out, em.passwd2sha512("123456"), 44);
+        em.encryptionFile(file_in, file_out, 44);
         d("time002:" + new Date());
-        em.decryptionFile(file_out, file_de, em.passwd2sha512("123456"), 44);
+        em.decryptionFile(file_out, file_de, 44);
         d("time003:" + new Date());
     }
 
     /*
      * i don encryption some byte len of head.
      */
-    public boolean encryptionFile(File file_in, File file_out, byte[] md5byte, int noencrypheadlean) {
+    public boolean encryptionFile(File file_in, File file_out, int noencrypheadlean) {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(file_in);
@@ -102,7 +102,7 @@ public class EncryManager {
         return true;
     }
 
-    private boolean decryptionFile(File file_in, File file_out, byte[] md5byte,  int noencrypheadlean) {
+    private boolean decryptionFile(File file_in, File file_out, int noencrypheadlean) {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(file_in);
@@ -170,7 +170,7 @@ public class EncryManager {
 		mPos = 0;
 	}
 	
-	public byte[] encryptionbyte(byte[] inout, int len){
+	private byte[] encryptionbyte(byte[] inout, int len){
 		len = len > mEnCryLen ? mEnCryLen : len;
 		int i = 0;
 		for (i = 0; i < len; i++){
@@ -190,7 +190,7 @@ public class EncryManager {
 		return inout;
 	}
 	
-	public byte[] decryptionbyte(byte[] inout, int len){
+	private byte[] decryptionbyte(byte[] inout, int len){
 		len = len > mEnCryLen ? mEnCryLen : len;
 		int i = 0;
 		for (i = 0; i < len; i++){
@@ -207,7 +207,7 @@ public class EncryManager {
 	}
 	
 	
-    public byte[] passwd2sha512(String passwd) {
+    private byte[] passwd2sha512(String passwd) {
 
         byte[] bytesOfMessage = null;
         try {

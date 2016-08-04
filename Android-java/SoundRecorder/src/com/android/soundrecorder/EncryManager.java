@@ -170,7 +170,7 @@ public class EncryManager {
 		mPos = 0;
 	}
 	
-	private byte[] encryptionbyte(byte[] inout, int len){
+	public byte[] encryptionbyte(byte[] inout, int len){
 		len = len > mEnCryLen ? mEnCryLen : len;
 		int i = 0;
 		for (i = 0; i < len; i++){
@@ -190,7 +190,7 @@ public class EncryManager {
 		return inout;
 	}
 	
-	private byte[] decryptionbyte(byte[] inout, int len){
+	public byte[] decryptionbyte(byte[] inout, int len){
 		len = len > mEnCryLen ? mEnCryLen : len;
 		int i = 0;
 		for (i = 0; i < len; i++){

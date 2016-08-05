@@ -20,7 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class SoundRecorder extends Activity implements Button.OnClickListener,
+public class SoundRecorderActivity extends Activity implements Button.OnClickListener,
 		RecorderWav.OnStateChangedListener {
 	static final String TAG = "zxw";
 
@@ -41,7 +41,12 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 	ImageButton mRecordButton;
 	ImageButton mPauseButton;
 	ImageButton mStopButton;
-
+	
+	Button mPlayPause;
+	Button mPlayStop;
+	Button mPlayNext;
+	Button mPlayPrev;
+	
 	ImageView mStateLED;
 	TextView mStateMessage1;
 	TextView mStateMessage2;
@@ -90,9 +95,18 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 		mTimerView = (TextView) findViewById(R.id.timerView);
 		mPasswdText = (EditText) findViewById(R.id.passwdEdit);
 		
+		mPlayNext = (Button)findViewById(R.id.next);
+		mPlayPrev = (Button)findViewById(R.id.prev);
+		mPlayPause = (Button)findViewById(R.id.playpause);
+		mPlayStop = (Button)findViewById(R.id.stop);
+		
 		mRecordButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
 		mPauseButton.setOnClickListener(this);
+		mPlayNext.setOnClickListener(this);
+		mPlayPause.setOnClickListener(this);
+		mPlayStop.setOnClickListener(this);
+		mPlayPrev.setOnClickListener(this);
 		
 		mTimerFormat = getResources().getString(R.string.timer_format);
 
@@ -129,6 +143,9 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 			Log.i(TAG, "stopButton..click");
 			mRecorderWav.stopRecording();
 			// mRecorder.stop();
+			break;
+		case R.id.playpause:
+			AudioPlayWav mAudioPlayWav = new AudioPlayWav(this, mUiHandler);
 			break;
 		}
 	}
@@ -312,7 +329,7 @@ public class SoundRecorder extends Activity implements Button.OnClickListener,
 				break;
 			case SAVE_FILE_SUCCESS:
 				Log.i(TAG, ".uihandler ..in save file success");
-				Toast.makeText(SoundRecorder.this, 
+				Toast.makeText(SoundRecorderActivity.this, 
 						"save file success", Toast.LENGTH_LONG).show();
 			     break;
 			case FILE_REACH_SIZE:

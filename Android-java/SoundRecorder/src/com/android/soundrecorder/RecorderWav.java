@@ -88,12 +88,12 @@ public class RecorderWav implements Runnable {
 			return;
 		}
 		switch (msg) {
-		case SoundRecorder.FILE_REACH_SIZE:
+		case SoundRecorderActivity.FILE_REACH_SIZE:
 			
 			break;
-		case SoundRecorder.SAVE_FILE_SUCCESS:
+		case SoundRecorderActivity.SAVE_FILE_SUCCESS:
 			Log.i(TAG, "..in WAV.. save file success");
-			mHandler.sendEmptyMessage(SoundRecorder.SAVE_FILE_SUCCESS);
+			mHandler.sendEmptyMessage(SoundRecorderActivity.SAVE_FILE_SUCCESS);
 			break;
 		default:
 			break;
@@ -314,7 +314,7 @@ public class RecorderWav implements Runnable {
 		renameRecodFileWithTimeLenth();
 		scanFileAsync();
 		wavdatalen = 0;
-		sendEmpMsg(SoundRecorder.SAVE_FILE_SUCCESS);
+		sendEmpMsg(SoundRecorderActivity.SAVE_FILE_SUCCESS);
 		
 //		File dir = new File(Environment.getExternalStorageDirectory()
 //				.getAbsolutePath(), "WAV_RECODE");

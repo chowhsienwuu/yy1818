@@ -118,7 +118,7 @@ public class EncryManager {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
+//        byte[] test = new byte[0];
         byte[] buffer_in = new byte[1024];
         byte[] buffer_head = new byte[noencrypheadlean];
         int len = 0;

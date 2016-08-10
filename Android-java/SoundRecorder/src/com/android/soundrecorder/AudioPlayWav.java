@@ -112,11 +112,15 @@ public class AudioPlayWav implements Runnable{
 				doPause();
 			}
 		}
+		
+		stop();
 	}
 	
 	public void stop(){
 		mState = PLAY_END;
-		mPlayThread.notify();
+		if (mState == PLAY_PAUSE_STATE && mPlayThread != null) {
+			mPlayThread.notify();
+		}
 		try {
 			mFis.close();
 		} catch (IOException e) {

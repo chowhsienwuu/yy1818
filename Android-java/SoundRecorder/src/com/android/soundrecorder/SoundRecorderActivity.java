@@ -159,6 +159,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			if (mAudioPlayWav != null){
 				mAudioPlayWav.stop();
 			}
+			mAudioPlayWav = null;
 			break;
 		}
 	}

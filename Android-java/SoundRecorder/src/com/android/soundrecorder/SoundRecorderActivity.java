@@ -56,7 +56,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	
 	Resources res = null;
 	private RecorderWav mRecorderWav = null;
-
+	private AudioPlayWav mAudioPlayWav = null;
 	@Override
 	public void onCreate(Bundle icycle) {
 		DiskSpaceRecyle.getInstance().start();
@@ -145,7 +145,20 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			// mRecorder.stop();
 			break;
 		case R.id.playpause:
-			AudioPlayWav mAudioPlayWav = new AudioPlayWav(this, mUiHandler);
+			if (mAudioPlayWav == null) {
+				mAudioPlayWav = new AudioPlayWav(this, mUiHandler);
+			}else {
+				if (mAudioPlayWav.getmState() == AudioPlayWav.PLAY_STARTED){
+					mAudioPlayWav.pause();
+				}else if(mAudioPlayWav.getmState() == AudioPlayWav.PLAY_PAUSE_STATE){
+					mAudioPlayWav.resume();
+				}
+			}
+			break;
+		case R.id.stop:
+			if (mAudioPlayWav != null){
+				mAudioPlayWav.stop();
+			}
 			break;
 		}
 	}

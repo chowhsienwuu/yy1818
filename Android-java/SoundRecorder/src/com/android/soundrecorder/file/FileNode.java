@@ -9,7 +9,14 @@ public class FileNode {
 	private int FILE_STATE_PLAYING =  0x2;
 	
 	private int mState = FILE_STATE_IDLE;
+	private long mLastModifyTime = 0L;
 	
+	public long getLastModifyTime() {
+		return mLastModifyTime;
+	}
+	public void setLastModifyTime(long mLastModifyTime) {
+		this.mLastModifyTime = mLastModifyTime;
+	}
 	public FileNode(){
 		
 	}
@@ -21,16 +28,16 @@ public class FileNode {
 		mState = filesttue;
 	}
 	
-	public int getmState() {
+	public int getState() {
 		return mState;
 	}
-	public void setmState(int mState) {
+	public void setState(int mState) {
 		this.mState = mState;
 	}
-	public String getmFilePath() {
+	public String getFilePath() {
 		return mFilePath;
 	}
-	public void setmFilePath(String mFilePath) {
+	public void setFilePath(String mFilePath) {
 		this.mFilePath = mFilePath;
 	}
 	

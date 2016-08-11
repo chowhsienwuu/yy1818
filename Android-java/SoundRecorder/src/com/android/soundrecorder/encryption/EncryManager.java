@@ -1,4 +1,4 @@
-package com.android.soundrecorder;
+package com.android.soundrecorder.encryption;
 
 import java.io.File;
 import java.io.FileInputStream;

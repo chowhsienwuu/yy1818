@@ -1,6 +1,9 @@
 
 package com.android.soundrecorder;
 
+import com.android.soundrecorder.file.DiskSpaceRecyle;
+import com.android.soundrecorder.file.FileManager;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
@@ -59,8 +62,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	private AudioPlayWav mAudioPlayWav = null;
 	@Override
 	public void onCreate(Bundle icycle) {
-		DiskSpaceRecyle.getInstance().start();
-		
+		//DiskSpaceRecyle.getInstance().start();
+		FileManager.getInstance();
 		super.onCreate(icycle);
 		Log.i(TAG, "onCreate");
 		setContentView(R.layout.main);

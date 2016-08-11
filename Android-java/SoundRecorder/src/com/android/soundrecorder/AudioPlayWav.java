@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.android.soundrecorder.encryption.EncryManager;
+
 import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -32,16 +34,13 @@ public class AudioPlayWav implements Runnable{
 	
 	int mState = IDLE_STATE;
 	
-	
 	public int getmState() {
 		return mState;
 	}
 
-
 	public void setmState(int mState) {
 		this.mState = mState;
 	}
-
 
 	public AudioPlayWav(Context context, Handler handler){
 		mContext = context;
@@ -87,6 +86,7 @@ public class AudioPlayWav implements Runnable{
 		EncryManager em = new EncryManager("123456");
 		try {
 			mFis.skip(44);
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

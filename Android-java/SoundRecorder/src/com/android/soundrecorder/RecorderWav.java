@@ -8,6 +8,8 @@ import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.android.soundrecorder.encryption.EncryManager;
+
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;

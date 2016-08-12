@@ -1,8 +1,12 @@
 
 package com.android.soundrecorder;
 
+import java.io.File;
+
 import com.android.soundrecorder.file.DiskSpaceRecyle;
 import com.android.soundrecorder.file.FileManager;
+import com.android.soundrecorder.wav.AudioPlayWav;
+import com.android.soundrecorder.wav.RecorderWav;
 
 import android.app.Activity;
 import android.content.Context;
@@ -115,7 +119,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 
 	}
 
-
 	/*
 	 * Handle the buttons.
 	 */
@@ -149,7 +152,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			break;
 		case R.id.playpause:
 			if (mAudioPlayWav == null) {
-				mAudioPlayWav = new AudioPlayWav(this, mUiHandler);
+				mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
+						mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNewestFile().getFilePath()));
 			}else {
 				if (mAudioPlayWav.getmState() == AudioPlayWav.PLAY_STARTED){
 					mAudioPlayWav.pause();
@@ -158,11 +162,27 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				}
 			}
 			break;
-		case R.id.stop:
+		case R.id.stop: //play wav.stop.
 			if (mAudioPlayWav != null){
 				mAudioPlayWav.stop();
 			}
 			mAudioPlayWav = null;
+			break;
+		case R.id.prev:
+			/* till play */
+			if (mAudioPlayWav != null){
+				mAudioPlayWav.stop();
+			}
+			mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
+					mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getPreFile().getFilePath()));
+			break;
+		case R.id.next:
+			/* till play */
+			if (mAudioPlayWav != null){
+				mAudioPlayWav.stop();
+			}
+			mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
+					mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNextFile().getFilePath()));
 			break;
 		}
 	}

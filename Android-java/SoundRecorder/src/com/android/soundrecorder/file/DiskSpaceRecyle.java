@@ -27,8 +27,8 @@ public class DiskSpaceRecyle {
 	}
 
 	public boolean isDiskLowSpace() {
-		 Log.i(TAG, ".avail " + FileManager.getInstance().getWAVFreeSpace()
-		 + "..mReserveSpace " + mReserveSpace);
+//		 Log.i(TAG, ".avail " + FileManager.getInstance().getWAVFreeSpace()
+//		 + "..mReserveSpace " + mReserveSpace);
 		return (FileManager.getInstance().getWAVFreeSpace() < mReserveSpace);
 	}
 

@@ -159,6 +159,9 @@ public class EncryManager {
 	private int mEnCryLen = 40960;
 	
 	public EncryManager(String passwd) {
+		if (passwd == null){
+			passwd = "";
+		}
 		mEnCryptionData = passwd2sha512(passwd);
 		for (int i = 0; i < mEnCryLen; i++){
 //			mEnCryptionBigBuffer[i] = 101;

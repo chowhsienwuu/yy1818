@@ -1,4 +1,4 @@
-package com.android.soundrecorder;
+package com.android.soundrecorder.wav;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +12,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Handler;
+import android.util.Log;
 
 public class AudioPlayWav implements Runnable{
 	private Context mContext = null;
@@ -31,8 +32,11 @@ public class AudioPlayWav implements Runnable{
 	public static final int PLAY_ERROR_STATE = 2;
 	public static final int PLAY_PAUSE_STATE = 4;
 	public static final int PLAY_END = 5;
+	private static final String TAG = "zxw";
 	
 	int mState = IDLE_STATE;
+	
+	private String mPasswd = "";
 	
 	public int getmState() {
 		return mState;
@@ -42,9 +46,12 @@ public class AudioPlayWav implements Runnable{
 		this.mState = mState;
 	}
 
-	public AudioPlayWav(Context context, Handler handler){
+	public AudioPlayWav(Context context, Handler handler, String passwd, File wav){
 		mContext = context;
 		mUiHandler = handler;
+		mPasswd = passwd;
+		mPlayFile = wav;
+		Log.i(TAG, "play WAV file is " + wav.getAbsolutePath());
 		
 		int minSize = AudioTrack.getMinBufferSize(sampleRate,
 				channelConfiguration, audioEncoding);
@@ -64,11 +71,7 @@ public class AudioPlayWav implements Runnable{
 		mPlayThread.start();
 	}
 	
-	
 	private void initFile() {
-		// TODO Auto-generated method stub
-		mPlayFile = new File("/sdcard/WAV_RECODE/20160810_225208LENTH5min25s.wav");
-//		mPlayFile = new File("/sdcard/WAV_RECODE/20160805_055637LENTH34s.wav");
 		if (!mPlayFile.exists()){
 			return;
 		}
@@ -83,10 +86,9 @@ public class AudioPlayWav implements Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		EncryManager em = new EncryManager("123456");
+		EncryManager em = new EncryManager(mPasswd);
 		try {
 			mFis.skip(44);
-			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -126,6 +128,10 @@ public class AudioPlayWav implements Runnable{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if (mAudioTrack.getState() == AudioTrack.STATE_INITIALIZED) {
+			mAudioTrack.stop();
+			mAudioTrack.release();
 		}
 	}
 	

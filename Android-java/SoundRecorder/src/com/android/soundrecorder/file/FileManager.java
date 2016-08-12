@@ -19,8 +19,8 @@ public class FileManager implements Runnable{
 	private ArrayList<FileNode> mFileList = new ArrayList<FileNode>();
 //	private boolean mHasInit = false;
 	private Thread mFileManagerThread = null;
-	private long  mSleepTime = 1 * 1000; //3min to check once;
-//	private long  mSleepTime = 180 * 1000; //3min to check once;
+//	private long  mSleepTime = 1 * 1000; //3min to check once;
+	private long  mSleepTime = 180 * 1000; //3min to check once;
 	private DiskSpaceRecyle mDiskSpaceRecyle = new DiskSpaceRecyle();
 	
 	public String getWAVrootDir(){

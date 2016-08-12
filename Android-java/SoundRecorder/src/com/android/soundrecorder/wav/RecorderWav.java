@@ -1,4 +1,4 @@
-package com.android.soundrecorder;
+package com.android.soundrecorder.wav;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,6 +8,7 @@ import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.android.soundrecorder.SoundRecorderActivity;
 import com.android.soundrecorder.encryption.EncryManager;
 
 import android.content.Context;

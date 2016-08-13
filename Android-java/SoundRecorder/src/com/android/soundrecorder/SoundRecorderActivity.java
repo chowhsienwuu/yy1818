@@ -57,9 +57,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	Button mPlayPrev;
 	
 	ImageView mStateLED;
-	TextView mStateMessage1;
-	TextView mStateMessage2;
-	ProgressBar mStateProgressBar;
 	TextView mTimerView;
 	EditText mPasswdText = null;
 	
@@ -97,9 +94,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mPauseButton = (ImageButton) findViewById(R.id.pauseButton);
 		
 		mStateLED = (ImageView) findViewById(R.id.stateLED);
-		mStateMessage1 = (TextView) findViewById(R.id.stateMessage1);
-		mStateMessage2 = (TextView) findViewById(R.id.stateMessage2);
-		mStateProgressBar = (ProgressBar) findViewById(R.id.stateProgressBar);
 		mTimerView = (TextView) findViewById(R.id.timerView);
 		mPasswdText = (EditText) findViewById(R.id.passwdEdit);
 		
@@ -118,10 +112,19 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		
 		mTimerFormat = getResources().getString(R.string.timer_format);
 	}
-
-	/*
-	 * Handle the buttons.
-	 */
+	
+	private void stopRecordForSafe(){
+		if (mRecorderWav != null){
+			mRecorderWav.stopRecording();
+		}
+	}
+	
+	private void stopPlayForSafe(){
+		if(mAudioPlayWav != null){
+			mAudioPlayWav.stop();
+		}
+	}
+	
 	public void onClick(View button) {
 		Log.i(TAG, "onClick");
 		//mUiHandler.sendEmptyMessage(UI_HANDLER_TEST);
@@ -133,6 +136,9 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 						Toast.LENGTH_LONG).show();
 				return;
 			}
+			stopRecordForSafe();
+			stopPlayForSafe();
+			
 			mRecorderWav = new RecorderWav(this, mUiHandler, mPasswdText.getEditableText().toString());
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
@@ -150,6 +156,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			}
 			break;
 		case R.id.playpause:
+			stopRecordForSafe();
 			if (mAudioPlayWav == null) {
 				mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
 						mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNewestFile().getFilePath()));
@@ -168,6 +175,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			mAudioPlayWav = null;
 			break;
 		case R.id.prev:
+			stopRecordForSafe();
 			/* till play */
 			if (mAudioPlayWav != null){
 				mAudioPlayWav.stop();
@@ -176,6 +184,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 					mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getPreFile().getFilePath()));
 			break;
 		case R.id.next:
+			stopRecordForSafe();
 			/* till play */
 			if (mAudioPlayWav != null){
 				mAudioPlayWav.stop();
@@ -184,7 +193,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 					mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNextFile().getFilePath()));
 			break;
 		}
-
 	}
 	
 	@Override
@@ -288,7 +296,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			}
 		}
 	}
-
 
 	public static final int UI_HANDLER_UPDATE_UP = 0X01;
 	public static final int SAVE_FILE_SUCCESS = 0x02;

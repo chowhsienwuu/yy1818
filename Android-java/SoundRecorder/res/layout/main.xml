@@ -37,35 +37,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical" />
                 
-            <TextView android:id="@+id/stateMessage2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/recording"
-                android:layout_gravity="center_vertical" 
-                android:layout_marginLeft="5px"
-                style="@android:style/TextAppearance.Medium"/>
-
         </LinearLayout>
     
-        <TextView android:id="@+id/stateMessage1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/stateMessage2Layout"
-            android:layout_centerHorizontal="true"
-            style="@android:style/TextAppearance.Small" />                
-
-        <ProgressBar android:id="@+id/stateProgressBar"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" 
-            android:layout_above="@+id/timerView"
-            android:max="100"
-            android:progress="0"
-            android:visibility="gone"
-            android:layout_marginLeft="20dip"
-            android:layout_marginRight="20dip"
-            style="?android:attr/progressBarStyleHorizontal" />
-
     </RelativeLayout>
     
     <ImageView
@@ -79,8 +52,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="1">
 
-
-    
        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">     

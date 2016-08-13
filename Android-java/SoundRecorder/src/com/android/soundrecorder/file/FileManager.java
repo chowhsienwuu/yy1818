@@ -76,6 +76,17 @@ public class FileManager implements Runnable{
 		}
 	}
 	
+	public boolean addFileNode(File newfile){
+		if (!newfile.exists()){
+			return false;
+		}
+		FileNode filenode = new FileNode(newfile.getAbsolutePath(), FileNode.FILE_STATE_IDLE);
+		filenode.setLastModifyTime(newfile.lastModified());
+		mFileList.add(filenode); 
+		Collections.sort(mFileList, new SortByTime());
+		return true;
+	}
+	
 	private int mFilePos = 0;
 	public FileNode getOldestFile(){
 		if (mFileList.size() > 0){

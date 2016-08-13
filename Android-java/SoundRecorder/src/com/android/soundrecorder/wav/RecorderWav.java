@@ -10,6 +10,7 @@ import java.util.Date;
 
 import com.android.soundrecorder.SoundRecorderActivity;
 import com.android.soundrecorder.encryption.EncryManager;
+import com.android.soundrecorder.file.FileManager;
 
 import android.content.Context;
 import android.content.Intent;
@@ -67,7 +68,8 @@ public class RecorderWav implements Runnable {
 	private long wavdatalen = 0L; //how many byte write in.
 	
 	private File mRecodingFile = null;
-	private FileOutputStream mRecodOutputStream = null;
+//	private FileOutputStream mRecodOutputStream = null;
+	private RandomAccessFile mRecodRaf = null;
 	private Thread mRecodThread = null;
 	private EncryManager mEncryptionManager = null;
 	
@@ -221,8 +223,11 @@ public class RecorderWav implements Runnable {
 		oldPath.delete(index, index + 4);
 		oldPath.append(str + ".wav");
 		File newPath = new File(oldPath.toString());
+		/***add the file to filemanager**/
+		FileManager.getInstance().addFileNode(mRecodingFile);
 		
-		return mRecodingFile.renameTo(newPath);
+		return true;
+		//return mRecodingFile.renameTo(newPath);
 	}
 	
 	private void scanFileAsync() {
@@ -249,7 +254,8 @@ public class RecorderWav implements Runnable {
 		mRecodingFile = new File(dir, "/" + fileName);
 		
 		try {
-			mRecodOutputStream = new FileOutputStream(mRecodingFile);
+//			mRecodOutputStream = new FileOutputStream(mRecodingFile);
+			mRecodRaf = new RandomAccessFile(mRecodingFile, "rws");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -257,7 +263,8 @@ public class RecorderWav implements Runnable {
 		
 		try {
 			// just write the WAV HEAD!.
-			mRecodOutputStream.write(getWavHeader(1));
+//			mRecodOutputStream.write(getWavHeader(1));
+			mRecodRaf.write(getWavHeader(1));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -274,13 +281,30 @@ public class RecorderWav implements Runnable {
 			if (getLen > 0 && mState != RECORDING_PAUSE_STATE){
 				try {
 					mEncryptionManager.encryptionbyte(mRecodBuffer, getLen);
-					mRecodOutputStream.write(mRecodBuffer, 0, getLen);
+//					mRecodOutputStream.write(mRecodBuffer, 0, getLen);
+					
+					mRecodRaf.write(mRecodBuffer, 0, getLen);
 					wavdatalen += getLen;
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
+			
+			/*every 256k write head */
+			if (wavdatalen % (1024 * 256) == 0) {
+				try {
+					mRecodRaf.seek(0);
+					Log.e("zxw", "...rewrite the head");
+					mRecodRaf.write(getWavHeader(wavdatalen));
+					mRecodRaf.seek(44 + wavdatalen);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			//save the head.
 			//CHECK IF THE TIME IS TO BIG SO TIME TO LONG ?.
 //			Log.i(TAG, "recodtimesec." + getRecodTimeInSec() + "." + mMaxRecodTime);
 //			Log.i(TAG, "recodfielsize." + getRecodFileSize() + "." + mMaxFileSize);
@@ -293,8 +317,9 @@ public class RecorderWav implements Runnable {
 		}
 
 		try {
-			mRecodOutputStream.flush();
-			mRecodOutputStream.close();
+//			mRecodOutputStream.flush();
+//			mRecodOutputStream.close();
+			mRecodRaf.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

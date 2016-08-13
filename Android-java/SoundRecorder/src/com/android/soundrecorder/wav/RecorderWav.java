@@ -122,7 +122,6 @@ public class RecorderWav implements Runnable {
 				channelConfiguration, audioEncoding);
 		bufferSizeInBytes = 4096 * 10; // 
 
-
 		Log.i(TAG, "bufferSizeInBytes=" + bufferSizeInBytes); // 4096 byte.
 		audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				sampleRate, channelConfiguration, audioEncoding,

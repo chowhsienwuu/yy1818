@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
+import com.android.soundrecorder.SoundRecorderActivity;
 import com.android.soundrecorder.encryption.EncryManager;
 
 import android.content.Context;
@@ -23,7 +25,7 @@ public class AudioPlayWav implements Runnable{
 	private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT; // pcm 16bit.
 	private int sampleRate = 44100; // 4.41KHZ
 	private File mPlayFile = null;
-	private FileInputStream mFis = null;
+	private RandomAccessFile mRaf = null;
 	private Thread mPlayThread = null;
 	
 	//play status
@@ -38,11 +40,11 @@ public class AudioPlayWav implements Runnable{
 	
 	private String mPasswd = "";
 	
-	public int getmState() {
+	public int getState() {
 		return mState;
 	}
 
-	public void setmState(int mState) {
+	public void setState(int mState) {
 		this.mState = mState;
 	}
 
@@ -67,8 +69,9 @@ public class AudioPlayWav implements Runnable{
 		initFile();
 		mPlayThread = new Thread(this);
 		mPlayThread.setName("playthread");
-		setmState(PLAY_STARTED);
+		setState(PLAY_STARTED);
 		mPlayThread.start();
+		mUiHandler.sendEmptyMessage(SoundRecorderActivity.UI_HANDLER_UPDATE_TIMERVIEW);
 	}
 	
 	private void initFile() {
@@ -76,7 +79,7 @@ public class AudioPlayWav implements Runnable{
 			return;
 		}
 		try {
-			mFis = new FileInputStream(mPlayFile);
+			mRaf = new RandomAccessFile(mPlayFile, "r");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -88,16 +91,16 @@ public class AudioPlayWav implements Runnable{
 		// TODO Auto-generated method stub
 		EncryManager em = new EncryManager(mPasswd);
 		try {
-			mFis.skip(44);
-		} catch (IOException e) {
+			mRaf.skipBytes(44);
+		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}//skip the head.
-			
+			e1.printStackTrace();
+		}
+		
 		int len = 0;
 		while (mState == PLAY_STARTED || mState == PLAY_PAUSE_STATE){
 			try {
-				len = mFis.read(mbuffer);
+				len = mRaf.read(mbuffer);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -106,7 +109,7 @@ public class AudioPlayWav implements Runnable{
 				em.decryptionbyte(mbuffer, len);
 				mAudioTrack.write(mbuffer, 0, len);
 			}else {
-				setmState(PLAY_END);
+				setState(PLAY_END);
 				break;
 			}
 			
@@ -118,26 +121,36 @@ public class AudioPlayWav implements Runnable{
 		stop();
 	}
 	
+	public long getPlayTimeInSec(){
+		try {
+			return mRaf.getFilePointer() / (44100 * 2 * 1);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0L;
+	}
+	
 	public void stop(){
 		mState = PLAY_END;
 		if (mState == PLAY_PAUSE_STATE && mPlayThread != null) {
 			mPlayThread.notify();
 		}
 		try {
-			mFis.close();
+			mRaf.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (mAudioTrack.getState() == AudioTrack.STATE_INITIALIZED) {
-			mAudioTrack.stop();
-			mAudioTrack.release();
+//			mAudioTrack.stop();
+//			mAudioTrack.release();
 		}
 	}
 	
 	public boolean pause() {
 		if (mState == PLAY_STARTED) {
-			setmState(PLAY_PAUSE_STATE);
+			setState(PLAY_PAUSE_STATE);
 			return true;
 		}
 		return false;
@@ -158,7 +171,7 @@ public class AudioPlayWav implements Runnable{
 	public boolean resume(){
 		if (mPlayThread != null && mState == PLAY_PAUSE_STATE){
 			synchronized (mPlayThread) {
-				setmState(PLAY_STARTED);
+				setState(PLAY_STARTED);
 				mPlayThread.notify();
 				return true;
 			}

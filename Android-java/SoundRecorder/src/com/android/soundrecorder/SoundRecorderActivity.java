@@ -5,6 +5,7 @@ import java.io.File;
 
 import com.android.soundrecorder.file.DiskSpaceRecyle;
 import com.android.soundrecorder.file.FileManager;
+import com.android.soundrecorder.util.MiscUtil;
 import com.android.soundrecorder.wav.AudioPlayWav;
 import com.android.soundrecorder.wav.RecorderWav;
 
@@ -155,9 +156,9 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
 						mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNewestFile().getFilePath()));
 			}else {
-				if (mAudioPlayWav.getmState() == AudioPlayWav.PLAY_STARTED){
+				if (mAudioPlayWav.getState() == AudioPlayWav.PLAY_STARTED){
 					mAudioPlayWav.pause();
-				}else if(mAudioPlayWav.getmState() == AudioPlayWav.PLAY_PAUSE_STATE){
+				}else if(mAudioPlayWav.getState() == AudioPlayWav.PLAY_PAUSE_STATE){
 					mAudioPlayWav.resume();
 				}
 			}
@@ -185,6 +186,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 					mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNextFile().getFilePath()));
 			break;
 		}
+
 	}
 	
 	@Override
@@ -242,45 +244,43 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		super.onDestroy();
 	}
 
-	private long mRecodeTime = 0;
-
+	private long mTimeViewTime = 0;
+	
 	private void updateTimerView() {
-		if (mRecorderWav == null) {
-			return;
+		Log.e("zxw", "updateTimerview");
+		if (mRecorderWav != null) {
+			mTimeViewTime = mRecorderWav.getRecodTimeInSec();
+			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
+
+			String timeStr = String
+					.format(mTimerFormat, hms[0], hms[1], hms[2]);
+			mTimerView.setText(timeStr);
+
+			if (mTimeViewTime % 2 == 1) {
+				mStateLED.setVisibility(View.INVISIBLE);
+			} else {
+				mStateLED.setVisibility(View.VISIBLE);
+			}
+
+			if (mRecorderWav.getState() == RecorderWav.RECORDING_STARTED) {
+				mLoopHandler.postDelayed(mUpdateTimer, 1000);
+			}
 		}
 		
-		int state = mRecorderWav.getState();
+		if (mAudioPlayWav != null){
+			Log.e("zxw", ".play time." + mAudioPlayWav.getPlayTimeInSec());
+			mTimeViewTime = mAudioPlayWav.getPlayTimeInSec();
+			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
 
-		boolean ongoing = state == RecorderWav.RECORDING_STARTED;
-
-		mRecodeTime = mRecorderWav.getRecodTimeInSec();
-//		Log.i("zxw", "update timervier" + mRecodeTime + "..ongoing " + true);
-		int hour = (int)(mRecodeTime / 3600);
-		int sec = (int)(mRecodeTime % 60);
-		int min = (int)((mRecodeTime - 3600 * hour) / 60);
-
-		String timeStr = String.format(mTimerFormat, hour, min, sec);
-		mTimerView.setText(timeStr);
-		
-		if (mRecodeTime % 2 == 1){
-			mStateLED.setVisibility(View.INVISIBLE);
-		}else {
-			mStateLED.setVisibility(View.VISIBLE);
+			String timeStr = String
+					.format(mTimerFormat, hms[0], hms[1], hms[2]);
+			mTimerView.setText(timeStr);
+			
+			if (mAudioPlayWav.getState() == AudioPlayWav.PLAY_STARTED ||
+					mAudioPlayWav.getState() == AudioPlayWav.PLAY_PAUSE_STATE) {
+				mLoopHandler.postDelayed(mUpdateTimer, 1000);
+			}
 		}
-		
-		updateTimeRemaining();
-
-		if (ongoing)
-			mLoopHandler.postDelayed(mUpdateTimer, 1000);
-	}
-
-	/*
-	 * Called when we're in recording state. Find out how much longer we can go
-	 * on recording. If it's under 5 minutes, we display a count-down in the UI.
-	 * If we've run out of time, stop the recording.
-	 */
-	private void updateTimeRemaining() {
-
 	}
 
 	/**
@@ -353,6 +353,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	public static final int UI_HANDLER_UPDATE_UP = 0X01;
 	public static final int SAVE_FILE_SUCCESS = 0x02;
 	public static final int FILE_REACH_SIZE = 0X3;
+	public static final int UI_HANDLER_UPDATE_TIMERVIEW = 0X04;
 	public static final int UI_HANDLER_TEST = 0X10;
 	private Handler mUiHandler = new  Handler(){
 
@@ -375,6 +376,9 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				break;
 			case UI_HANDLER_TEST:
 				Log.i(TAG, "..get a UI_HANDLER_TEST");
+				break;
+			case UI_HANDLER_UPDATE_TIMERVIEW:
+				updateTimerView();
 				break;
 			default:
 				break;

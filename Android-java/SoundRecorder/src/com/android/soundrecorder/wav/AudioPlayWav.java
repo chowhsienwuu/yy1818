@@ -142,10 +142,8 @@ public class AudioPlayWav implements Runnable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (mAudioTrack.getState() == AudioTrack.STATE_INITIALIZED) {
-//			mAudioTrack.stop();
-//			mAudioTrack.release();
-		}
+
+		mAudioTrack.release();
 	}
 	
 	public boolean pause() {

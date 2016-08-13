@@ -315,7 +315,8 @@ public class RecorderWav implements Runnable {
 				Log.e(TAG, ".reach file size or time stop recording");
 			}
 		}
-
+		
+		stopRecording();
 		try {
 //			mRecodOutputStream.flush();
 //			mRecodOutputStream.close();

@@ -34,7 +34,7 @@ public class AudioPlayWav implements Runnable{
 	public static final int PLAY_ERROR_STATE = 2;
 	public static final int PLAY_PAUSE_STATE = 4;
 	public static final int PLAY_END = 5;
-	private static final String TAG = "zxw";
+	private static final String TAG = "AudioPlayWav";
 	
 	int mState = IDLE_STATE;
 	

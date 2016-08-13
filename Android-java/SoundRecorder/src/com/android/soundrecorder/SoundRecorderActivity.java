@@ -28,9 +28,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class SoundRecorderActivity extends Activity implements Button.OnClickListener,
-		RecorderWav.OnStateChangedListener {
-	static final String TAG = "zxw";
+public class SoundRecorderActivity extends Activity implements Button.OnClickListener
+		{
+	static final String TAG = "SoundRecorderActivity";
 
 	WakeLock mWakeLock;
 
@@ -39,6 +39,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	long mMaxFileSize = -1; // can be specified in the intent
 
 	String mTimerFormat;
+	
 	final Handler mLoopHandler = new Handler();
 	Runnable mUpdateTimer = new Runnable() {
 		public void run() {
@@ -78,7 +79,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		res = getResources();
 		initResourceRefs();
 				
-		updateUi();
 	}
 
 	@Override
@@ -117,7 +117,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mPlayPrev.setOnClickListener(this);
 		
 		mTimerFormat = getResources().getString(R.string.timer_format);
-
 	}
 
 	/*
@@ -134,22 +133,21 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 						Toast.LENGTH_LONG).show();
 				return;
 			}
-			mRecorderWav = new RecorderWav(this, mPasswdText.getEditableText().toString());
-			mRecorderWav.setOnStateChangedListener(this);
-			mRecorderWav.setHandler(mUiHandler);
-//			mRecorderWav.setMaxRecodTime(5);
-//			mRecorderWav.setMaxFileSize(300 * 1024L);
+			mRecorderWav = new RecorderWav(this, mUiHandler, mPasswdText.getEditableText().toString());
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
 			break;
 		case R.id.pauseButton:
 			Log.i(TAG, "pauseRecording..click");
-			mRecorderWav.pauseRecording();
+			if (mRecorderWav != null) {
+				mRecorderWav.pauseRecording();
+			}
 			break;
 		case R.id.stopButton:
 			Log.i(TAG, "stopButton..click");
-			mRecorderWav.stopRecording();
-			// mRecorder.stop();
+			if (mRecorderWav != null) {
+				mRecorderWav.stopRecording();
+			}
 			break;
 		case R.id.playpause:
 			if (mAudioPlayWav == null) {
@@ -243,11 +241,18 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		}
 		super.onDestroy();
 	}
-
-	private long mTimeViewTime = 0;
 	
+	private long mTimeViewTime = 0;
+
+	private void updateTimerRest() {
+		Log.i(TAG, "updateTimerRest");
+		String timeStr = String.format(mTimerFormat, 0, 0, 0);
+		mTimerView.setText(timeStr);
+		mStateLED.setVisibility(View.INVISIBLE);
+	}
+
 	private void updateTimerView() {
-		Log.e("zxw", "updateTimerview");
+		Log.i(TAG, "updateTimerview");
 		if (mRecorderWav != null) {
 			mTimeViewTime = mRecorderWav.getRecodTimeInSec();
 			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
@@ -262,13 +267,14 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				mStateLED.setVisibility(View.VISIBLE);
 			}
 
-			if (mRecorderWav.getState() == RecorderWav.RECORDING_STARTED) {
+			if (mRecorderWav.getState() == RecorderWav.RECORDING_STARTED || 
+					mRecorderWav.getState() == RecorderWav.RECORDING_PAUSE_STATE) {
 				mLoopHandler.postDelayed(mUpdateTimer, 1000);
 			}
 		}
 		
 		if (mAudioPlayWav != null){
-			Log.e("zxw", ".play time." + mAudioPlayWav.getPlayTimeInSec());
+			Log.i(TAG, ".play time." + mAudioPlayWav.getPlayTimeInSec());
 			mTimeViewTime = mAudioPlayWav.getPlayTimeInSec();
 			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
 
@@ -283,77 +289,12 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		}
 	}
 
-	/**
-	 * Shows/hides the appropriate child views for the new state.
-	 */
-	private void updateUi() {
-		if (mRecorderWav == null) {
-			mRecordButton.setClickable(true);
-			mPasswdText.setEnabled(true);
-			mPauseButton.setClickable(false);
-			mStopButton.setClickable(false);
-			mStateLED.setVisibility(View.INVISIBLE);
-			return;
-		}
-		switch (mRecorderWav.getState()) {
-		case RecorderWav.IDLE_STATE:
-			mStateLED.setVisibility(View.INVISIBLE);
-			mRecordButton.setClickable(true);
-			mPasswdText.setEnabled(true);
-			mPauseButton.setClickable(false);
-			mStopButton.setClickable(false);
-			break;
-		case RecorderWav.RECORDING_STARTED:
-			mStateLED.setVisibility(View.VISIBLE);
-			mRecordButton.setClickable(false);
-			mPauseButton.setClickable(true);
-			mStopButton.setClickable(true);
-			mPasswdText.setEnabled(false);
-			break;
-		case RecorderWav.RECORDING_PAUSE_STATE:
-			mStateLED.setVisibility(View.INVISIBLE);
-			mRecordButton.setClickable(false);
-			mPauseButton.setClickable(true);
-			mStopButton.setClickable(true);
-			break;
-		}
 
-		updateTimerView();
-	}
-
-	/*
-	 * Called when Recorder changed it's state.
-	 */
-	public void onStateChanged(int state) {
-
-//		updateUi();
-		mUiHandler.sendEmptyMessage(UI_HANDLER_UPDATE_UP);
-	}
-	/*
-	 * Called when MediaPlayer encounters an error.
-	 */
-	public void onError(int error) {
-//		mUiHandler.sendEmptyMessage(UI_HANDLER_TEST);
-//		mLoopHandler.sendEmptyMessage(FILE_REACH_SIZE);
-		Log.i(TAG, "..ui OnError" + error);
-		switch (error) {
-		case RecorderWav.ERROR_REACH_SIZE:
-			//now we start a another recod.
-			Log.i(TAG, "..ui..oneror..sendemptymsg file_reach_size");
-			mUiHandler.sendEmptyMessage(FILE_REACH_SIZE);
-			break;
-
-		default:
-			break;
-		}
-	}
-	/*
-	 * 
-	 */
 	public static final int UI_HANDLER_UPDATE_UP = 0X01;
 	public static final int SAVE_FILE_SUCCESS = 0x02;
 	public static final int FILE_REACH_SIZE = 0X3;
 	public static final int UI_HANDLER_UPDATE_TIMERVIEW = 0X04;
+	public static final int UI_HANDLER_UPDATE_TIME_RESET = 0X05;
 	public static final int UI_HANDLER_TEST = 0X10;
 	private Handler mUiHandler = new  Handler(){
 
@@ -363,7 +304,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			Log.i(TAG, ".uihandler ..get." + msg.what);
 			switch (msg.what) {
 			case UI_HANDLER_UPDATE_UP:
-				updateUi();
+
 				break;
 			case SAVE_FILE_SUCCESS:
 				Log.i(TAG, ".uihandler ..in save file success");
@@ -379,6 +320,9 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				break;
 			case UI_HANDLER_UPDATE_TIMERVIEW:
 				updateTimerView();
+				break;
+			case UI_HANDLER_UPDATE_TIME_RESET:
+				updateTimerRest();
 				break;
 			default:
 				break;

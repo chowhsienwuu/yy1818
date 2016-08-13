@@ -36,26 +36,6 @@ public class RecorderWav implements Runnable {
 	
 	public static final int ERROR_REACH_SIZE = 0X100;
 
-	public interface OnStateChangedListener {
-		public void onStateChanged(int state);
-		public void onError(int error);
-	}
-
-	OnStateChangedListener mOnStateChangedListener = null;
-	
-	public void setOnStateChangedListener(OnStateChangedListener listener) {
-		mOnStateChangedListener = listener;
-	}
-	
-	private void signalStateChanged(int state) {
-		if (mOnStateChangedListener != null)
-			mOnStateChangedListener.onStateChanged(state);
-	}
-
-	private void setError(int error) {
-		if (mOnStateChangedListener != null)
-			mOnStateChangedListener.onError(error);
-	}
 
 	private AudioRecord audioRecord;
 	private int channelConfiguration = AudioFormat.CHANNEL_IN_MONO; // mono
@@ -84,10 +64,7 @@ public class RecorderWav implements Runnable {
 	private Context mContext = null;
 	
 	private Handler mHandler = null;
-	public void setHandler(Handler handler){
-		mHandler = handler;
-	}
-	
+
 	private void sendEmpMsg(int msg){
 		if (mHandler == null){
 			return;
@@ -114,8 +91,9 @@ public class RecorderWav implements Runnable {
 	 * 
 	 */
 	
-	public RecorderWav(Context context, String passwd) {
+	public RecorderWav(Context context, Handler hander, String passwd) {
 		mContext = context;
+		mHandler = hander;
 		Log.i(TAG, "before new encrymanager");
 		mEncryptionManager = new EncryManager(passwd);
 		Log.i(TAG, "after new encrymanager");
@@ -132,7 +110,6 @@ public class RecorderWav implements Runnable {
 		mBytePerSec = sampleRate * 1 * 2 ;//44100 * 1(mono) * 2(pcm16) =176400
 		mRecodBuffer = new byte[bufferSizeInBytes];
 		mRecodThread = new Thread(this);
-		
 		Log.i(TAG, "..the max File size is " + mMaxFileSize);
 	}
 
@@ -174,7 +151,6 @@ public class RecorderWav implements Runnable {
 			return;
 		}
 		mState = statue;
-		signalStateChanged(mState);
 	}
 	
 	public synchronized void startRecording() {
@@ -187,6 +163,7 @@ public class RecorderWav implements Runnable {
 			e.printStackTrace();
 			setState(RECORDING_ERROR_STATE);
 		}
+		mHandler.sendEmptyMessage(SoundRecorderActivity.UI_HANDLER_UPDATE_TIMERVIEW);
 	}
 
 	public synchronized void stopRecording() {
@@ -198,6 +175,7 @@ public class RecorderWav implements Runnable {
 			e.printStackTrace();
 			setState(RECORDING_ERROR_STATE);
 		}
+		mHandler.sendEmptyMessage(SoundRecorderActivity.UI_HANDLER_UPDATE_TIME_RESET);
 	}
 	
 	private boolean renameRecodFileWithTimeLenth(){
@@ -311,7 +289,7 @@ public class RecorderWav implements Runnable {
 			if (getRecodTimeInSec() >= mMaxRecodTime 
 					|| getRecodFileSize() >= mMaxFileSize){
 				stopRecording();
-				setError(ERROR_REACH_SIZE);
+				mHandler.sendEmptyMessage(SoundRecorderActivity.FILE_REACH_SIZE);
 				Log.e(TAG, ".reach file size or time stop recording");
 			}
 		}

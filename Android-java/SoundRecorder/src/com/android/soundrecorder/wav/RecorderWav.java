@@ -65,23 +65,6 @@ public class RecorderWav implements Runnable {
 	private Context mContext = null;
 	
 	private Handler mHandler = null;
-
-	private void sendEmpMsg(int msg){
-		if (mHandler == null){
-			return;
-		}
-		switch (msg) {
-		case SoundRecorderActivity.FILE_REACH_SIZE:
-			
-			break;
-		case SoundRecorderActivity.SAVE_FILE_SUCCESS:
-			Log.i(TAG, "..in WAV.. save file success");
-			mHandler.sendEmptyMessage(SoundRecorderActivity.SAVE_FILE_SUCCESS);
-			break;
-		default:
-			break;
-		}
-	}
 	
 	public RecorderWav(Context context, Handler hander, String passwd) {
 		mContext = context;
@@ -315,20 +298,8 @@ public class RecorderWav implements Runnable {
 		renameRecodFileWithTimeLenth();
 		scanFileAsync();
 		wavdatalen = 0;
-		sendEmpMsg(SoundRecorderActivity.SAVE_FILE_SUCCESS);
 		
-//		File dir = new File(Environment.getExternalStorageDirectory()
-//				.getAbsolutePath(), "WAV_RECODE");
-//		if (!dir.exists()) {
-//			dir.mkdirs();
-//		}
-//
-//		Date date = new Date();
-//		File testFile = new File(dir, "/" + date.getMonth() + "."
-//				+ date.getDate() + "_" + date.getHours() + "."
-//				+ dat.getMinutes() + "test001 .wav");
-//		mEncryptionManager.encryptionFile(mRecodingFile, testFile,
-//				mEncryptionManager.passwd2sha512("123456"));
+		mHandler.sendEmptyMessage(SoundRecorderActivity.SAVE_FILE_SUCCESS);
 	}
 
 	private byte[] getWavHeader(long totalAudioLen) {

@@ -24,6 +24,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,6 +65,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	Resources res = null;
 	private RecorderWav mRecorderWav = null;
 	private AudioPlayWav mAudioPlayWav = null;
+	private TextView mStatusText = null;
+	private SeekBar mplaySeekBar = null;
 	
 	@Override
 	public void onCreate(Bundle icycle) {
@@ -87,7 +91,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 
 	}
 	
-	private TextView mStatusText = null;
 	/*
 	 * Whenever the UI is re-created (due f.ex. to orientation change) we have
 	 * to reinitialize references to the views.
@@ -101,6 +104,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mTimerView = (TextView) findViewById(R.id.timerView);
 		mPasswdText = (EditText) findViewById(R.id.passwdEdit);
 		mStatusText = (TextView)findViewById(R.id.statustext);
+		mplaySeekBar = (SeekBar)findViewById(R.id.playseekbar);
 		
 		mPlayNext = (Button)findViewById(R.id.next);
 		mPlayPrev = (Button)findViewById(R.id.prev);
@@ -108,6 +112,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mPlayStop = (Button)findViewById(R.id.stop);
 		
 		mStatusText.setClickable(false);
+		mplaySeekBar.setClickable(false);
 		mRecordButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
 		mPauseButton.setOnClickListener(this);
@@ -117,6 +122,32 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mPlayPrev.setOnClickListener(this);
 		
 		mTimerFormat = getResources().getString(R.string.timer_format);
+		
+		
+		mplaySeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar arg0) {
+				
+			}
+			
+			@Override
+			public void onStartTrackingTouch(SeekBar arg0) {
+				
+			}
+			
+			@Override
+			public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
+				//Log.i(TAG, "onprogressChanged. " + arg1 + ". " + arg2);
+				// arg1 is the process value, arg2== is we seecked man
+				if (mAudioPlayWav != null && arg2){
+					if (mAudioPlayWav.getState() == AudioPlayWav.PLAY_PAUSE_STATE || 
+							mAudioPlayWav.getState() == AudioPlayWav.PLAY_STARTED){
+						mAudioPlayWav.seekTo(arg1);
+					}
+				}
+			}
+		});
 	}
 	
 	private void stopRecordForSafe(){
@@ -260,7 +291,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	private long mTimeViewTime = 0;
 
 	private void updateTimerRest() {
-		Log.i(TAG, "updateTimerRest");
+		//Log.i(TAG, "updateTimerRest");
 		String timeStr = String.format(mTimerFormat, 0, 0, 0);
 		mTimerView.setText(timeStr);
 		mStateLED.setVisibility(View.INVISIBLE);
@@ -293,6 +324,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 					.format(mTimerFormat, hms[0], hms[1], hms[2]);
 			mTimerView.setText(timeStr);
 			mStatusText.setText("STATUS: Play: " + FileName);
+			mplaySeekBar.setMax(mPlayFileLenInSec);
+			mplaySeekBar.setProgress((int)mTimeViewTime);
 		}
 		
 		if (mState == STATE_IDLE){
@@ -319,7 +352,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	
 	private int mState = STATE_IDLE;
 	private String FileName = "";
-	
+	private int mPlayFileLenInSec = 0;
 	private Handler mUiHandler = new  Handler(){
 		@Override
 		public void handleMessage(Message msg) {
@@ -356,6 +389,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				break;
 			case STATE_PLAY_STARTED:
 				mState = STATE_PLAY_STARTED;
+				mPlayFileLenInSec = msg.arg1;
 				FileName = msg.obj.toString();
 				uiLoopRender(false);
 				break;

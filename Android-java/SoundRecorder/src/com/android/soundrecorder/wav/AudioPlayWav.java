@@ -28,7 +28,7 @@ public class AudioPlayWav implements Runnable{
 	private File mPlayFile = null;
 	private RandomAccessFile mRaf = null;
 	private Thread mPlayThread = null;
-	
+	private static final int BYTEPERSEC = (44100 * 2 * 1);
 	//play status
 	public static final int IDLE_STATE = 0;
 	public static final int PLAY_STARTED = 1;
@@ -74,6 +74,12 @@ public class AudioPlayWav implements Runnable{
 		mPlayThread.start();
 		
 		Message msg = new Message();
+		try {
+			msg.arg1 = (int)(mRaf.length() - 44) / BYTEPERSEC;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		msg.what = SoundRecorderActivity.STATE_PLAY_STARTED;
 		msg.obj = mPlayFile.getName();
 		mUiHandler.sendMessage(msg);
@@ -91,6 +97,30 @@ public class AudioPlayWav implements Runnable{
 		}
 	}
 
+	public synchronized boolean seekTo(int sec){
+		try {
+			if (sec < 0 || sec > ((mRaf.length() - 44) / BYTEPERSEC)){
+				return false;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		int t_pos = sec * BYTEPERSEC;
+		t_pos /= 64;
+		t_pos *= 64; // in 64bles
+
+		try {
+			mRaf.seek(t_pos + 44);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return true;
+	}
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
@@ -104,11 +134,13 @@ public class AudioPlayWav implements Runnable{
 		
 		int len = 0;
 		while (mState == PLAY_STARTED || mState == PLAY_PAUSE_STATE){
-			try {
-				len = mRaf.read(mbuffer);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			synchronized (AudioPlayWav.this) {
+				try {
+					len = mRaf.read(mbuffer);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			if (len > 0){
 				em.decryptionbyte(mbuffer, len);
@@ -128,7 +160,7 @@ public class AudioPlayWav implements Runnable{
 	
 	public long getPlayTimeInSec(){
 		try {
-			return mRaf.getFilePointer() / (44100 * 2 * 1);
+			return mRaf.getFilePointer() / BYTEPERSEC;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

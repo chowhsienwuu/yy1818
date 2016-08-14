@@ -51,4 +51,5 @@
     <!-- shown as the message in a dialog when the recording could not be added to the media database -->
     <string name="error_mediadb_new_record">Couldn\'t save recorded audio.</string>
     <string name="testpasswd"></string>
+    <string name="statustext">status : idle</string>
 </resources>

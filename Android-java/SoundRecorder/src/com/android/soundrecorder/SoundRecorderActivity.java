@@ -43,7 +43,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	final Handler mLoopHandler = new Handler();
 	Runnable mUpdateTimer = new Runnable() {
 		public void run() {
-			updateTimerView();
+			uiLoopRender(true);
 		}
 	};
 
@@ -63,6 +63,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	Resources res = null;
 	private RecorderWav mRecorderWav = null;
 	private AudioPlayWav mAudioPlayWav = null;
+	
 	@Override
 	public void onCreate(Bundle icycle) {
 		//DiskSpaceRecyle.getInstance().start();
@@ -75,7 +76,9 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				"SoundRecorder");
 		res = getResources();
 		initResourceRefs();
-				
+		if (!misInUiloopRender) {
+			mLoopHandler.postDelayed(mUpdateTimer, 500);
+		}
 	}
 
 	@Override
@@ -83,7 +86,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		super.onSaveInstanceState(outState);
 
 	}
-
+	
+	private TextView mStatusText = null;
 	/*
 	 * Whenever the UI is re-created (due f.ex. to orientation change) we have
 	 * to reinitialize references to the views.
@@ -96,12 +100,14 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mStateLED = (ImageView) findViewById(R.id.stateLED);
 		mTimerView = (TextView) findViewById(R.id.timerView);
 		mPasswdText = (EditText) findViewById(R.id.passwdEdit);
+		mStatusText = (TextView)findViewById(R.id.statustext);
 		
 		mPlayNext = (Button)findViewById(R.id.next);
 		mPlayPrev = (Button)findViewById(R.id.prev);
 		mPlayPause = (Button)findViewById(R.id.playpause);
 		mPlayStop = (Button)findViewById(R.id.stop);
 		
+		mStatusText.setClickable(false);
 		mRecordButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
 		mPauseButton.setOnClickListener(this);
@@ -155,6 +161,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				mRecorderWav.stopRecording();
 			}
 			break;
+			
 		case R.id.playpause:
 			stopRecordForSafe();
 			if (mAudioPlayWav == null) {
@@ -208,7 +215,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		Log.d(TAG, "onResume");
 		super.onResume();
 	}
-
+	
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
@@ -258,13 +265,14 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mTimerView.setText(timeStr);
 		mStateLED.setVisibility(View.INVISIBLE);
 	}
-
-	private void updateTimerView() {
-		Log.i(TAG, "updateTimerview");
-		if (mRecorderWav != null) {
+	private boolean misInUiloopRender = false;
+	private void uiLoopRender(boolean loop) {
+		misInUiloopRender = true;
+//		Log.i(TAG, "uiLoopRender" + "mRecorderwav : " + mRecorderWav + 
+//				" mAudioPlayWav : " + mAudioPlayWav + ".mstate " + mState);
+		if (mRecorderWav != null && mState == STATE_RECODE_STARTED){
 			mTimeViewTime = mRecorderWav.getRecodTimeInSec();
 			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
-
 			String timeStr = String
 					.format(mTimerFormat, hms[0], hms[1], hms[2]);
 			mTimerView.setText(timeStr);
@@ -274,44 +282,52 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			} else {
 				mStateLED.setVisibility(View.VISIBLE);
 			}
-
-			if (mRecorderWav.getState() == RecorderWav.RECORDING_STARTED || 
-					mRecorderWav.getState() == RecorderWav.RECORDING_PAUSE_STATE) {
-				mLoopHandler.postDelayed(mUpdateTimer, 1000);
-			}
+			mStatusText.setText("STATUS: Recod: " + FileName);
 		}
-		
-		if (mAudioPlayWav != null){
-			Log.i(TAG, ".play time." + mAudioPlayWav.getPlayTimeInSec());
+		if (mAudioPlayWav != null && mState == STATE_PLAY_STARTED){
+		//	Log.i(TAG, ".play time." + mAudioPlayWav.getPlayTimeInSec());
 			mTimeViewTime = mAudioPlayWav.getPlayTimeInSec();
 			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
 
 			String timeStr = String
 					.format(mTimerFormat, hms[0], hms[1], hms[2]);
 			mTimerView.setText(timeStr);
-			
-			if (mAudioPlayWav.getState() == AudioPlayWav.PLAY_STARTED ||
-					mAudioPlayWav.getState() == AudioPlayWav.PLAY_PAUSE_STATE) {
-				mLoopHandler.postDelayed(mUpdateTimer, 1000);
-			}
+			mStatusText.setText("STATUS: Play: " + FileName);
+		}
+		
+		if (mState == STATE_IDLE){
+			updateTimerRest();
+			mStatusText.setText("STATUS: IDLE");
+		}
+		
+		if (loop){ // loop this the method, in 1sec.
+			mLoopHandler.postDelayed(mUpdateTimer, 1000);
 		}
 	}
-
+	
+	public static final int UI_HANDLER_TEST = -1;
+	public static final int STATE_IDLE = 0;
 	public static final int UI_HANDLER_UPDATE_UP = 0X01;
 	public static final int SAVE_FILE_SUCCESS = 0x02;
 	public static final int FILE_REACH_SIZE = 0X3;
 	public static final int UI_HANDLER_UPDATE_TIMERVIEW = 0X04;
 	public static final int UI_HANDLER_UPDATE_TIME_RESET = 0X05;
-	public static final int UI_HANDLER_TEST = 0X10;
+	public static final int STATE_RECODE_STARTED = 0X06;
+	public static final int STATE_RECODE_END = 0x07;
+	public static final int STATE_PLAY_STARTED = 0x08;
+	public static final int STATE_PLAY_END = 0X09;
+	
+	private int mState = STATE_IDLE;
+	private String FileName = "";
+	
 	private Handler mUiHandler = new  Handler(){
-
 		@Override
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			Log.i(TAG, ".uihandler ..get." + msg.what);
 			switch (msg.what) {
-			case UI_HANDLER_UPDATE_UP:
-
+			case UI_HANDLER_TEST:
+				Log.i(TAG, "..get a UI_HANDLER_TEST");
 				break;
 			case SAVE_FILE_SUCCESS:
 				Log.i(TAG, ".uihandler ..in save file success");
@@ -322,14 +338,26 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				Log.i(TAG, "..file_reach size callonClick");
 				mRecordButton.callOnClick();
 				break;
-			case UI_HANDLER_TEST:
-				Log.i(TAG, "..get a UI_HANDLER_TEST");
+			case STATE_RECODE_STARTED:
+				mState = STATE_RECODE_STARTED;
+				FileName = msg.obj.toString();
+				//Log.i(TAG, "the FileName is " + FileName);
+				uiLoopRender(false);
 				break;
-			case UI_HANDLER_UPDATE_TIMERVIEW:
-				updateTimerView();
+			case STATE_RECODE_END:
+				mState = STATE_IDLE;
+				//mRecorderWav = null;
+				uiLoopRender(false);
 				break;
-			case UI_HANDLER_UPDATE_TIME_RESET:
-				updateTimerRest();
+			case STATE_PLAY_STARTED:
+				mState = STATE_PLAY_STARTED;
+				FileName = msg.obj.toString();
+				uiLoopRender(false);
+				break;
+			case STATE_PLAY_END:
+				mState = STATE_IDLE;
+				//mAudioPlayWav = null;
+				uiLoopRender(false);
 				break;
 			default:
 				break;

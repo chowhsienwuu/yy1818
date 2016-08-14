@@ -20,6 +20,7 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class RecorderWav implements Runnable {
@@ -81,15 +82,6 @@ public class RecorderWav implements Runnable {
 			break;
 		}
 	}
-	
-	/*
-	 * ;//44100 * 1(mono) * 2(pcm16) =176400 byte/sec
-	 *	0xFFFFFFFF == most == 4294967295
-	 * 24347S
-	 * 6hour WAV HOST .
-	 * 
-	 * 
-	 */
 	
 	public RecorderWav(Context context, Handler hander, String passwd) {
 		mContext = context;
@@ -163,7 +155,10 @@ public class RecorderWav implements Runnable {
 			e.printStackTrace();
 			setState(RECORDING_ERROR_STATE);
 		}
-		mHandler.sendEmptyMessage(SoundRecorderActivity.UI_HANDLER_UPDATE_TIMERVIEW);
+		Message msg = new Message();
+		msg.what = SoundRecorderActivity.STATE_RECODE_STARTED;
+		msg.obj = mRecodingFile.getName();
+		mHandler.sendMessage(msg);
 	}
 
 	public synchronized void stopRecording() {
@@ -175,7 +170,7 @@ public class RecorderWav implements Runnable {
 			e.printStackTrace();
 			setState(RECORDING_ERROR_STATE);
 		}
-		mHandler.sendEmptyMessage(SoundRecorderActivity.UI_HANDLER_UPDATE_TIME_RESET);
+		mHandler.sendEmptyMessage(SoundRecorderActivity.STATE_RECODE_END);
 	}
 	
 	private boolean renameRecodFileWithTimeLenth(){

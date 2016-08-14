@@ -41,6 +41,13 @@
     
     </RelativeLayout>
     
+    <TextView 
+        android:id="@+id/statustext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/statustext"
+        />
+    
     <ImageView
          android:src="@android:drawable/divider_horizontal_dark"
          android:layout_width="match_parent"
@@ -146,9 +153,6 @@
             android:text="next" />
 
         </LinearLayout>
-
-
-
     </LinearLayout>
     
 </LinearLayout>

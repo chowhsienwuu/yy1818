@@ -14,6 +14,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class AudioPlayWav implements Runnable{
@@ -71,7 +72,12 @@ public class AudioPlayWav implements Runnable{
 		mPlayThread.setName("playthread");
 		setState(PLAY_STARTED);
 		mPlayThread.start();
-		mUiHandler.sendEmptyMessage(SoundRecorderActivity.UI_HANDLER_UPDATE_TIMERVIEW);
+		
+		Message msg = new Message();
+		msg.what = SoundRecorderActivity.STATE_PLAY_STARTED;
+		msg.obj = mPlayFile.getName();
+		mUiHandler.sendMessage(msg);
+//		mUiHandler.sendEmptyMessage(SoundRecorderActivity.STATE_PLAY_STARTED);
 	}
 	
 	private void initFile() {
@@ -144,6 +150,7 @@ public class AudioPlayWav implements Runnable{
 		}
 
 		mAudioTrack.release();
+		mUiHandler.sendEmptyMessage(SoundRecorderActivity.STATE_PLAY_END);
 	}
 	
 	public boolean pause() {

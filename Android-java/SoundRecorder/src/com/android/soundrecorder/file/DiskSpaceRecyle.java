@@ -9,7 +9,7 @@ public class DiskSpaceRecyle {
 	public DiskSpaceRecyle() {
 	}
 
-	public static final String TAG = "zxw";
+	public static final String TAG = "DiskSpaceRecyle";
 
 	// private long mEmptySize = 6024678656L; // 500M
 	private long mReserveSpace = 500 * 1024 * 1024L; // 500M

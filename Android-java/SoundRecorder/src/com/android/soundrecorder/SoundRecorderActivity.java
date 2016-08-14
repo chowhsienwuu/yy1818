@@ -346,6 +346,11 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				break;
 			case STATE_RECODE_END:
 				mState = STATE_IDLE;
+				if (mRecorderWav != null){
+					if (mRecorderWav.getState() == RecorderWav.IDLE_STATE){
+						mRecorderWav = null;
+					}
+				}
 				//mRecorderWav = null;
 				uiLoopRender(false);
 				break;
@@ -356,6 +361,11 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				break;
 			case STATE_PLAY_END:
 				mState = STATE_IDLE;
+				if (mAudioPlayWav != null){
+					if (mAudioPlayWav.getState() == AudioPlayWav.PLAY_END){
+						mAudioPlayWav = null;
+					}
+				}
 				//mAudioPlayWav = null;
 				uiLoopRender(false);
 				break;

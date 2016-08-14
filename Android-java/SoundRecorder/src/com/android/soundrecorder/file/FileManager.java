@@ -9,7 +9,7 @@ import android.os.Environment;
 import android.util.Log;
 
 public class FileManager implements Runnable{
-	public static final String TAG = "zxw";
+	public static final String TAG = "FileManager";
 	private static FileManager mInstance = new FileManager();
 	
 	private String mSdcardRootPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";

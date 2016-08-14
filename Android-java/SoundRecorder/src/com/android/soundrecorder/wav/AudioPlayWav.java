@@ -77,7 +77,6 @@ public class AudioPlayWav implements Runnable{
 		msg.what = SoundRecorderActivity.STATE_PLAY_STARTED;
 		msg.obj = mPlayFile.getName();
 		mUiHandler.sendMessage(msg);
-//		mUiHandler.sendEmptyMessage(SoundRecorderActivity.STATE_PLAY_STARTED);
 	}
 	
 	private void initFile() {
@@ -137,7 +136,7 @@ public class AudioPlayWav implements Runnable{
 		return 0L;
 	}
 	
-	public void stop(){
+	public synchronized void stop(){
 		mState = PLAY_END;
 		if (mState == PLAY_PAUSE_STATE && mPlayThread != null) {
 			mPlayThread.notify();
@@ -153,7 +152,7 @@ public class AudioPlayWav implements Runnable{
 		mUiHandler.sendEmptyMessage(SoundRecorderActivity.STATE_PLAY_END);
 	}
 	
-	public boolean pause() {
+	public synchronized boolean pause() {
 		if (mState == PLAY_STARTED) {
 			setState(PLAY_PAUSE_STATE);
 			return true;
@@ -173,7 +172,7 @@ public class AudioPlayWav implements Runnable{
 		}
 	}
 	
-	public boolean resume(){
+	public synchronized boolean resume(){
 		if (mPlayThread != null && mState == PLAY_PAUSE_STATE){
 			synchronized (mPlayThread) {
 				setState(PLAY_STARTED);

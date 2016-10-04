@@ -1,16 +1,8 @@
 package com.android.soundrecorder.wav;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import com.android.soundrecorder.SoundRecorderActivity;
-import com.android.soundrecorder.encryption.EncryManager;
-import com.android.soundrecorder.file.FileManager;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,6 +14,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.android.soundrecorder.SoundRecorderActivity;
+import com.android.soundrecorder.encryption.EncryManager;
+import com.android.soundrecorder.file.FileManager;
 
 public class RecorderWav implements Runnable {
 	private static final String TAG = "RecorderWav";
@@ -48,29 +44,24 @@ public class RecorderWav implements Runnable {
 	private long wavdatalen = 0L; //how many byte write in.
 	
 	private File mRecodingFile = null;
-//	private FileOutputStream mRecodOutputStream = null;
 	private RandomAccessFile mRecodRaf = null;
 	private Thread mRecodThread = null;
 	private EncryManager mEncryptionManager = null;
 	
-	//max 3g = 3 * 1024(M) * 1024(k) * 1024(B)
 	private static final long MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024L;
 	//max 3hour 
 	private static final long MAX_FILE_TIME = 3 * 60 * 60L;
-	
+	//private static final long MAX_FILE_TIME = 5;
 	private long mMaxFileSize = MAX_FILE_SIZE; //in Bytes.
 	private long mMaxRecodTime = MAX_FILE_TIME; // in sec
 	
 	private Context mContext = null;
-	
 	private Handler mHandler = null;
 	
 	public RecorderWav(Context context, Handler hander, String passwd) {
 		mContext = context;
 		mHandler = hander;
-		Log.i(TAG, "before new encrymanager");
 		mEncryptionManager = new EncryManager(passwd);
-		Log.i(TAG, "after new encrymanager");
 		
 		bufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRate,
 				channelConfiguration, audioEncoding);
@@ -128,100 +119,52 @@ public class RecorderWav implements Runnable {
 	}
 	
 	public synchronized void startRecording() {
+		Message msg = new Message();
 		try {
 			initFile();
 			setState(RECORDING_STARTED);
 			mRecodThread.start();
 			audioRecord.startRecording();
-		} catch (IllegalStateException e) {
+			msg.what = SoundRecorderActivity.STATE_RECODE_STARTED;
+		} catch (Exception e) {
 			e.printStackTrace();
+			msg.what = SoundRecorderActivity.STATE_RECODE_ERR;
 			setState(RECORDING_ERROR_STATE);
 		}
-		Message msg = new Message();
-		msg.what = SoundRecorderActivity.STATE_RECODE_STARTED;
+
 		msg.obj = mRecodingFile.getName();
 		mHandler.sendMessage(msg);
 	}
 
 	public synchronized void stopRecording() {
 		try {
-			audioRecord.stop(); // CHECK THIS FILE.
+			audioRecord.stop(); 
 			audioRecord.release();
 			setState(IDLE_STATE);
+			mHandler.sendEmptyMessage(SoundRecorderActivity.STATE_RECODE_END);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 			setState(RECORDING_ERROR_STATE);
+			mHandler.sendEmptyMessage(SoundRecorderActivity.STATE_RECODE_ERR);
 		}
-		mHandler.sendEmptyMessage(SoundRecorderActivity.STATE_RECODE_END);
-	}
-	
-	private boolean renameRecodFileWithTimeLenth(){
-		String str = "LENTH";
-		long mRecodeTime = getRecodTimeInSec();
-		int hour = (int)(mRecodeTime / 3600);
-		int sec = (int)(mRecodeTime % 60);
-		int min = (int)((mRecodeTime - 3600 * hour) / 60);
-		
-		if (hour != 0){
-			str += hour;
-			str += "h";
-		}
-		if (min != 0){
-			str += min;
-			str += "min";
-		}
-		str += sec;
-		str += "s";
-		
-		StringBuilder oldPath = new StringBuilder(mRecodingFile.getAbsolutePath());
-		int index = oldPath.lastIndexOf(".wav");
-		oldPath.delete(index, index + 4);
-		oldPath.append(str + ".wav");
-		File newPath = new File(oldPath.toString());
-		/***add the file to filemanager**/
-		FileManager.getInstance().addFileNode(mRecodingFile);
-		
-		return true;
-		//return mRecodingFile.renameTo(newPath);
 	}
 	
 	private void scanFileAsync() {
 		Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-		
 		File dir = new File(Environment.getExternalStorageDirectory()
 				.getAbsolutePath(), "WAV_RECODE");
 		scanIntent.setData(Uri.fromFile(dir));
 		mContext.sendBroadcast(scanIntent);
 	}
 	
-	private void initFile() {
-		File dir = new File(Environment.getExternalStorageDirectory()
-				.getAbsolutePath(), "WAV_RECODE");
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-
-		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss"); 
-		String fileName = formatter.format(date) + ".wav";
-		mRecodThread.setName(fileName);
+	private void initFile() throws Exception {
+		String name = FileManager.getInstance().genNewRecodFileName();
+		mRecodThread.setName(name);
 		mRecodThread.setPriority(Thread.MAX_PRIORITY);
-		mRecodingFile = new File(dir, "/" + fileName);
-		
-		try {
-//			mRecodOutputStream = new FileOutputStream(mRecodingFile);
-			mRecodRaf = new RandomAccessFile(mRecodingFile, "rws");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			// just write the WAV HEAD!.
-//			mRecodOutputStream.write(getWavHeader(1));
-			mRecodRaf.write(getWavHeader(1));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
+		mRecodingFile = new File(FileManager.getInstance().getWAVrootDir(), "/"	+ name);
+
+		mRecodRaf = new RandomAccessFile(mRecodingFile, "rws");
+		mRecodRaf.write(getWavHeader(1));
 	}
 
 	@Override
@@ -233,20 +176,16 @@ public class RecorderWav implements Runnable {
 			if (getLen > 0 && mState != RECORDING_PAUSE_STATE){
 				try {
 					mEncryptionManager.encryptionbyte(mRecodBuffer, getLen);
-//					mRecodOutputStream.write(mRecodBuffer, 0, getLen);
-					
 					mRecodRaf.write(mRecodBuffer, 0, getLen);
 					wavdatalen += getLen;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			
-			/*every 256k write head */
+
 			if (wavdatalen % (1024 * 256) == 0) {
 				try {
 					mRecodRaf.seek(0);
-					Log.e("zxw", "...rewrite the head");
 					mRecodRaf.write(getWavHeader(wavdatalen));
 					mRecodRaf.seek(44 + wavdatalen);
 				} catch (IOException e) {
@@ -254,43 +193,31 @@ public class RecorderWav implements Runnable {
 				}
 			}
 
-			//save the head.
-			//CHECK IF THE TIME IS TO BIG SO TIME TO LONG ?.
-//			Log.i(TAG, "recodtimesec." + getRecodTimeInSec() + "." + mMaxRecodTime);
-//			Log.i(TAG, "recodfielsize." + getRecodFileSize() + "." + mMaxFileSize);
 			if (getRecodTimeInSec() >= mMaxRecodTime 
 					|| getRecodFileSize() >= mMaxFileSize){
 				stopRecording();
 				mHandler.sendEmptyMessage(SoundRecorderActivity.FILE_REACH_SIZE);
-				Log.e(TAG, ".reach file size or time stop recording");
+				Log.i(TAG, ".reach file size or time stop recording");
 			}
 		}
 		
 		stopRecording();
+
 		try {
-//			mRecodOutputStream.flush();
-//			mRecodOutputStream.close();
+			mRecodRaf.seek(0);
+			mRecodRaf.write(getWavHeader(wavdatalen));
 			mRecodRaf.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		try {
-			RandomAccessFile raf = new RandomAccessFile(mRecodingFile, "rw");
-			raf.seek(0);
-			raf.write(getWavHeader(wavdatalen));
-			raf.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		
-		renameRecodFileWithTimeLenth();
+		FileManager.getInstance().addFileNode(mRecodingFile);
 		scanFileAsync();
 		wavdatalen = 0;
 		
-		mHandler.sendEmptyMessage(SoundRecorderActivity.SAVE_FILE_SUCCESS);
+		if (getState() == IDLE_STATE) {
+			mHandler.sendEmptyMessage(SoundRecorderActivity.SAVE_FILE_SUCCESS);
+		}
 	}
 
 	private byte[] getWavHeader(long totalAudioLen) {
@@ -346,7 +273,6 @@ public class RecorderWav implements Runnable {
 		header[43] = (byte) ((totalAudioLen >> 24) & 0xff);
 		
 		//mEncryptionManager.encryptionbyte(header, 44);
-		
 		return header;
 	}
 

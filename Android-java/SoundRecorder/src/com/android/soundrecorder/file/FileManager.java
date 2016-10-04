@@ -1,9 +1,11 @@
 package com.android.soundrecorder.file;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 
 import android.os.Environment;
 import android.util.Log;
@@ -22,11 +24,7 @@ public class FileManager implements Runnable{
 //	private long  mSleepTime = 1 * 1000; //3min to check once;
 	private long  mSleepTime = 180 * 1000; //3min to check once;
 	private DiskSpaceRecyle mDiskSpaceRecyle = new DiskSpaceRecyle();
-	
-	public String getWAVrootDir(){
-		return mWAVrootDir;
-	}
-	
+
 	private FileManager(){
 		init();		
 	}
@@ -36,6 +34,18 @@ public class FileManager implements Runnable{
 	
 	public static FileManager getInstance(){
 		return mInstance;
+	}
+	public String getWAVrootDirPath(){
+		return mWAVrootDir;
+	}
+	public File getWAVrootDir(){
+		return new File(mWAVrootDir);
+	}
+	public String genNewRecodFileName(){
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss"); 
+		String fileName = formatter.format(date) + ".wav";
+		return fileName;
 	}
 		
 	private void init(){

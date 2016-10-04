@@ -133,7 +133,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	public void onClick(View button) {
 		switch (button.getId()) {
 		case R.id.recordButton:
-			Log.i(TAG, "recordbutton..click");
 			if (mPasswdText.getEditableText().length() == 0){
 				Toast.makeText(this, "input the passwd to encryption",
 						Toast.LENGTH_LONG).show();
@@ -144,7 +143,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			
 			mRecorderWav = new RecorderWav(this, mUiHandler, mPasswdText.getEditableText().toString());
 			mRecorderWav.startRecording();
-            mStateLED.setImageResource(R.drawable.recording_led);
 			break;			
 		case R.id.playpause:
 			//in recorder status . play. continue function
@@ -241,7 +239,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			mStatusText.setText("STATUS: IDLE");
 		}
 		
-		if (loop){ // loop this the method, in 1sec.
+		if (loop){ 
 			mLoopHandler.postDelayed(mUpdateTimer, 1000);
 		}
 	}
@@ -257,11 +255,12 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	public static final int STATE_RECODE_END = 0x07;
 	public static final int STATE_PLAY_STARTED = 0x08;
 	public static final int STATE_PLAY_END = 0X09;
+	public static final int STATE_RECODE_ERR = 0x10;
 	
 	private int mState = STATE_IDLE;
 	private String FileName = "";
 	private int mPlayFileLenInSec = 0;
-	private Handler mUiHandler = new  Handler(){
+	private  Handler mUiHandler = new  Handler(){
 		@Override
 		public void handleMessage(Message msg) {
 			Log.i(TAG, ".uihandler ..get." + msg.what);
@@ -270,18 +269,15 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				Log.i(TAG, "..get a UI_HANDLER_TEST");
 				break;
 			case SAVE_FILE_SUCCESS:
-				Log.i(TAG, ".uihandler ..in save file success");
 				Toast.makeText(SoundRecorderActivity.this, 
 						"save file success", Toast.LENGTH_LONG).show();
 			     break;
 			case FILE_REACH_SIZE:
-				Log.i(TAG, "..file_reach size callonClick");
 				mRecord.callOnClick();
 				break;
 			case STATE_RECODE_STARTED:
 				mState = STATE_RECODE_STARTED;
 				FileName = msg.obj.toString();
-				//Log.i(TAG, "the FileName is " + FileName);
 				uiLoopRender(false);
 				break;
 			case STATE_RECODE_END:
@@ -291,8 +287,9 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 						mRecorderWav = null;
 					}
 				}
-				//mRecorderWav = null;
 				uiLoopRender(false);
+				break;
+			case STATE_RECODE_ERR:
 				break;
 			case STATE_PLAY_STARTED:
 				mState = STATE_PLAY_STARTED;

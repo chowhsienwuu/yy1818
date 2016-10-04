@@ -1,4 +1,4 @@
-package com.android.soundrecorder.util;
+package com.encryption.soundrecorder.util;
 
 public class MiscUtil {
 	public static int[] sec2hms(long secTime){

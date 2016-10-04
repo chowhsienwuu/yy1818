@@ -1,5 +1,5 @@
 
-package com.android.soundrecorder;
+package com.encryption.soundrecorder;
 
 import java.io.File;
 
@@ -21,11 +21,10 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.soundrecorder.file.FileManager;
-import com.android.soundrecorder.util.MiscUtil;
-import com.android.soundrecorder.wav.AudioPlayWav;
-import com.android.soundrecorder.wav.RecorderWav;
-
+import com.encryption.soundrecorder.file.FileManager;
+import com.encryption.soundrecorder.util.MiscUtil;
+import com.encryption.soundrecorder.wav.AudioPlayWav;
+import com.encryption.soundrecorder.wav.RecorderWav;
 
 public class SoundRecorderActivity extends Activity implements Button.OnClickListener
 		{
@@ -187,7 +186,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	public void onBackPressed() {
 		stopRecordForSafe();
 		stopPlayForSafe();
-		mWakeLock.release();
 		super.onBackPressed();
 	}
 	

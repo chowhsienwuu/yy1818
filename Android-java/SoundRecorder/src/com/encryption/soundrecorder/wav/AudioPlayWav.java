@@ -1,4 +1,4 @@
-package com.android.soundrecorder.wav;
+package com.encryption.soundrecorder.wav;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +12,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.android.soundrecorder.SoundRecorderActivity;
-import com.android.soundrecorder.encryption.EncryManager;
+import com.encryption.soundrecorder.SoundRecorderActivity;
+import com.encryption.soundrecorder.encryption.EncryManager;
 
 public class AudioPlayWav implements Runnable{
 	private Handler mUiHandler = null;

@@ -67,7 +67,9 @@ public class AudioPlayWav implements Runnable{
 		mAudioTrack.setStereoVolume(1.0f, 1.0f);
 		mAudioTrack.play();
 		
-		initFile();
+		if (!initFile()){
+			return ;
+		}
 		mPlayThread = new Thread(this);
 		mPlayThread.setName("playthread");
 		setState(PLAY_STARTED);
@@ -85,16 +87,14 @@ public class AudioPlayWav implements Runnable{
 		mUiHandler.sendMessage(msg);
 	}
 	
-	private void initFile() {
-		if (!mPlayFile.exists()){
-			return;
-		}
+	private boolean initFile() {
 		try {
 			mRaf = new RandomAccessFile(mPlayFile, "r");
+			return true;
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return false;
 	}
 
 	public synchronized boolean seekTo(int sec){

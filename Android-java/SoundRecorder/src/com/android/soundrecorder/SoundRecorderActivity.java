@@ -49,9 +49,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		}
 	};
 
-	ImageButton mRecordButton;
-	ImageButton mPauseButton;
-	
+	Button mRecordButton;
+
 	Button mPlayPause;
 	Button mPlayStop;
 	Button mPlayNext;
@@ -95,8 +94,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	 * to reinitialize references to the views.
 	 */
 	private void initResourceRefs() {
-		mRecordButton = (ImageButton) findViewById(R.id.recordButton);
-		mPauseButton = (ImageButton) findViewById(R.id.pauseButton);
+		mRecordButton = (Button) findViewById(R.id.recordButton);
 		
 		mStateLED = (ImageView) findViewById(R.id.stateLED);
 		mTimerView = (TextView) findViewById(R.id.timerView);
@@ -112,15 +110,13 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mStatusText.setClickable(false);
 		mplaySeekBar.setClickable(false);
 		mRecordButton.setOnClickListener(this);
-		mPauseButton.setOnClickListener(this);
 		mPlayNext.setOnClickListener(this);
 		mPlayPause.setOnClickListener(this);
 		mPlayStop.setOnClickListener(this);
 		mPlayPrev.setOnClickListener(this);
 		
 		mTimerFormat = getResources().getString(R.string.timer_format);
-		
-		
+
 		mplaySeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			
 			@Override
@@ -178,20 +174,20 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			mRecorderWav = new RecorderWav(this, mUiHandler, mPasswdText.getEditableText().toString());
 			mRecorderWav.startRecording();
             mStateLED.setImageResource(R.drawable.recording_led);
-			break;
-		case R.id.pauseButton:
-			Log.i(TAG, "pauseRecording..click");
-			if (mRecorderWav != null) {
-				mRecorderWav.pauseRecording();
-			}
-			break;
-			
+			break;			
 		case R.id.playpause:
+			//in recorder status . play. continue function
+			if (mRecorderWav != null){
+				mRecorderWav.pauseRecording();
+				break;
+			}
+			
 			stopRecordForSafe();
+			//is idle status . start a play.
 			if (mAudioPlayWav == null) {
 				mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
 						mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNewestFile().getFilePath()));
-			}else {
+			}else { // in play status alread. play plau.
 				if (mAudioPlayWav.getState() == AudioPlayWav.PLAY_STARTED){
 					mAudioPlayWav.pause();
 				}else if(mAudioPlayWav.getState() == AudioPlayWav.PLAY_PAUSE_STATE){

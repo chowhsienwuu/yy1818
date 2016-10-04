@@ -51,7 +51,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 
 	ImageButton mRecordButton;
 	ImageButton mPauseButton;
-	ImageButton mStopButton;
 	
 	Button mPlayPause;
 	Button mPlayStop;
@@ -97,7 +96,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	 */
 	private void initResourceRefs() {
 		mRecordButton = (ImageButton) findViewById(R.id.recordButton);
-		mStopButton = (ImageButton) findViewById(R.id.stopButton);
 		mPauseButton = (ImageButton) findViewById(R.id.pauseButton);
 		
 		mStateLED = (ImageView) findViewById(R.id.stateLED);
@@ -114,7 +112,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		mStatusText.setClickable(false);
 		mplaySeekBar.setClickable(false);
 		mRecordButton.setOnClickListener(this);
-		mStopButton.setOnClickListener(this);
 		mPauseButton.setOnClickListener(this);
 		mPlayNext.setOnClickListener(this);
 		mPlayPause.setOnClickListener(this);
@@ -154,12 +151,14 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		if (mRecorderWav != null){
 			mRecorderWav.stopRecording();
 		}
+		mRecorderWav = null;
 	}
 	
 	private void stopPlayForSafe(){
 		if(mAudioPlayWav != null){
 			mAudioPlayWav.stop();
 		}
+		mAudioPlayWav = null;
 	}
 	
 	public void onClick(View button) {
@@ -186,12 +185,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				mRecorderWav.pauseRecording();
 			}
 			break;
-		case R.id.stopButton:
-			Log.i(TAG, "stopButton..click");
-			if (mRecorderWav != null) {
-				mRecorderWav.stopRecording();
-			}
-			break;
 			
 		case R.id.playpause:
 			stopRecordForSafe();
@@ -206,11 +199,9 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				}
 			}
 			break;
-		case R.id.stop: //play wav.stop.
-			if (mAudioPlayWav != null){
-				mAudioPlayWav.stop();
-			}
-			mAudioPlayWav = null;
+		case R.id.stop: // stop record and play
+			stopRecordForSafe();
+			stopPlayForSafe();
 			break;
 		case R.id.prev:
 			stopRecordForSafe();
@@ -235,28 +226,24 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	
 	@Override
 	protected void onRestart() {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onRestart");
 		super.onRestart();
 	}
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onResume");
 		super.onResume();
 	}
 	
 	@Override
 	protected void onStart() {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onStart");
 		super.onStart();
 	}
 
 	@Override
 	public void onBackPressed() {
-		// TDO Auto-generated method stub
 		Log.d(TAG, "onBackPressed");
 		if (mRecorderWav != null){
 			mRecorderWav.stopRecording();
@@ -356,7 +343,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	private Handler mUiHandler = new  Handler(){
 		@Override
 		public void handleMessage(Message msg) {
-			// TODO Auto-generated method stub
 			Log.i(TAG, ".uihandler ..get." + msg.what);
 			switch (msg.what) {
 			case UI_HANDLER_TEST:

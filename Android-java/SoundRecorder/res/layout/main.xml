@@ -110,12 +110,6 @@
                 android:layout_height="match_parent" 
                 style="@style/MediaButton"
                 android:src="@drawable/pause" />
-    
-            <ImageButton android:id="@+id/stopButton"
-                android:layout_height="match_parent" 
-                style="@style/MediaButton"
-                android:src="@drawable/stop" />
-
         </LinearLayout>
 
     </LinearLayout>

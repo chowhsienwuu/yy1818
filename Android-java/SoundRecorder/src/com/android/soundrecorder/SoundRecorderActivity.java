@@ -3,12 +3,6 @@ package com.android.soundrecorder;
 
 import java.io.File;
 
-import com.android.soundrecorder.file.DiskSpaceRecyle;
-import com.android.soundrecorder.file.FileManager;
-import com.android.soundrecorder.util.MiscUtil;
-import com.android.soundrecorder.wav.AudioPlayWav;
-import com.android.soundrecorder.wav.RecorderWav;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
@@ -21,25 +15,24 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.soundrecorder.file.FileManager;
+import com.android.soundrecorder.util.MiscUtil;
+import com.android.soundrecorder.wav.AudioPlayWav;
+import com.android.soundrecorder.wav.RecorderWav;
+
 
 public class SoundRecorderActivity extends Activity implements Button.OnClickListener
 		{
-	static final String TAG = "SoundRecorderActivity";
+	public static final String TAG = "SoundRecorderActivity";
 
 	WakeLock mWakeLock;
-
-	String mErrorUiMessage = null; // Some error messages are displayed in the
-
 	long mMaxFileSize = -1; // can be specified in the intent
-
 	String mTimerFormat;
 	
 	final Handler mLoopHandler = new Handler();
@@ -49,15 +42,13 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		}
 	};
 
-	Button mRecordButton;
-
-	Button mPlayPause;
-	Button mPlayStop;
-	Button mPlayNext;
-	Button mPlayPrev;
-	
-	ImageView mStateLED;
-	TextView mTimerView;
+	Button mRecord = null;
+	Button mPlayPause = null;
+	Button mPlayStop = null;
+	Button mPlayNext = null;
+	Button mPlayPrev = null;
+	ImageView mStateLED = null;
+	TextView mTimerView = null;
 	EditText mPasswdText = null;
 	
 	Resources res = null;
@@ -68,14 +59,12 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	
 	@Override
 	public void onCreate(Bundle icycle) {
-		//DiskSpaceRecyle.getInstance().start();
 		FileManager.getInstance();
 		super.onCreate(icycle);
 		Log.i(TAG, "onCreate");
 		setContentView(R.layout.main);
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
-				"SoundRecorder");
+		mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SoundRecorder");
 		res = getResources();
 		initResourceRefs();
 		if (!misInUiloopRender) {
@@ -83,18 +72,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		}
 	}
 
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-
-	}
-	
-	/*
-	 * Whenever the UI is re-created (due f.ex. to orientation change) we have
-	 * to reinitialize references to the views.
-	 */
 	private void initResourceRefs() {
-		mRecordButton = (Button) findViewById(R.id.recordButton);
+		mRecord = (Button) findViewById(R.id.recordButton);
 		
 		mStateLED = (ImageView) findViewById(R.id.stateLED);
 		mTimerView = (TextView) findViewById(R.id.timerView);
@@ -109,30 +88,24 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		
 		mStatusText.setClickable(false);
 		mplaySeekBar.setClickable(false);
-		mRecordButton.setOnClickListener(this);
+		mRecord.setOnClickListener(this);
 		mPlayNext.setOnClickListener(this);
 		mPlayPause.setOnClickListener(this);
 		mPlayStop.setOnClickListener(this);
 		mPlayPrev.setOnClickListener(this);
 		
 		mTimerFormat = getResources().getString(R.string.timer_format);
-
 		mplaySeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			
 			@Override
 			public void onStopTrackingTouch(SeekBar arg0) {
-				
 			}
 			
 			@Override
 			public void onStartTrackingTouch(SeekBar arg0) {
-				
-			}
-			
+			}		
 			@Override
 			public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-				//Log.i(TAG, "onprogressChanged. " + arg1 + ". " + arg2);
-				// arg1 is the process value, arg2== is we seecked man
 				if (mAudioPlayWav != null && arg2){
 					if (mAudioPlayWav.getState() == AudioPlayWav.PLAY_PAUSE_STATE || 
 							mAudioPlayWav.getState() == AudioPlayWav.PLAY_STARTED){
@@ -158,8 +131,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	}
 	
 	public void onClick(View button) {
-		Log.i(TAG, "onClick");
-		//mUiHandler.sendEmptyMessage(UI_HANDLER_TEST);
 		switch (button.getId()) {
 		case R.id.recordButton:
 			Log.i(TAG, "recordbutton..click");
@@ -195,95 +166,50 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 				}
 			}
 			break;
-		case R.id.stop: // stop record and play
+		case R.id.stop: 
 			stopRecordForSafe();
 			stopPlayForSafe();
 			break;
 		case R.id.prev:
 			stopRecordForSafe();
-			/* till play */
-			if (mAudioPlayWav != null){
-				mAudioPlayWav.stop();
-			}
+			stopPlayForSafe();
 			mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
 					mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getPreFile().getFilePath()));
 			break;
 		case R.id.next:
 			stopRecordForSafe();
-			/* till play */
-			if (mAudioPlayWav != null){
-				mAudioPlayWav.stop();
-			}
+			stopPlayForSafe();
 			mAudioPlayWav = new AudioPlayWav(this, mUiHandler, 
 					mPasswdText.getEditableText().toString(), new File(FileManager.getInstance().getNextFile().getFilePath()));
 			break;
 		}
 	}
-	
-	@Override
-	protected void onRestart() {
-		Log.d(TAG, "onRestart");
-		super.onRestart();
-	}
-
-	@Override
-	protected void onResume() {
-		Log.d(TAG, "onResume");
-		super.onResume();
-	}
-	
-	@Override
-	protected void onStart() {
-		Log.d(TAG, "onStart");
-		super.onStart();
-	}
 
 	@Override
 	public void onBackPressed() {
-		Log.d(TAG, "onBackPressed");
-		if (mRecorderWav != null){
-			mRecorderWav.stopRecording();
-		}
+		stopRecordForSafe();
+		stopPlayForSafe();
+		mWakeLock.release();
 		super.onBackPressed();
 	}
-
-	@Override
-	public void onStop() {
-		Log.d(TAG, "onStop");
-		super.onStop();
-	}
-
-	@Override
-	protected void onPause() {
-		Log.d(TAG, "onPause");
-		super.onPause();
-	}
-
-	/*
-	 * Called on destroy to unregister the SD card mount event receiver.
-	 */
+	
 	@Override
 	public void onDestroy() {
-		Log.d(TAG, "onDestroy");
-		if (mRecorderWav != null){
-			mRecorderWav.stopRecording();
-		}
+		stopRecordForSafe();
+		stopPlayForSafe();
 		super.onDestroy();
 	}
 	
 	private long mTimeViewTime = 0;
-
 	private void updateTimerRest() {
-		//Log.i(TAG, "updateTimerRest");
 		String timeStr = String.format(mTimerFormat, 0, 0, 0);
 		mTimerView.setText(timeStr);
 		mStateLED.setVisibility(View.INVISIBLE);
+		mplaySeekBar.setProgress(0);
 	}
 	private boolean misInUiloopRender = false;
 	private void uiLoopRender(boolean loop) {
 		misInUiloopRender = true;
-//		Log.i(TAG, "uiLoopRender" + "mRecorderwav : " + mRecorderWav + 
-//				" mAudioPlayWav : " + mAudioPlayWav + ".mstate " + mState);
 		if (mRecorderWav != null && mState == STATE_RECODE_STARTED){
 			mTimeViewTime = mRecorderWav.getRecodTimeInSec();
 			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
@@ -299,7 +225,6 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			mStatusText.setText("STATUS: Recod: " + FileName);
 		}
 		if (mAudioPlayWav != null && mState == STATE_PLAY_STARTED){
-		//	Log.i(TAG, ".play time." + mAudioPlayWav.getPlayTimeInSec());
 			mTimeViewTime = mAudioPlayWav.getPlayTimeInSec();
 			int[] hms = MiscUtil.sec2hms(mTimeViewTime);
 
@@ -351,7 +276,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 			     break;
 			case FILE_REACH_SIZE:
 				Log.i(TAG, "..file_reach size callonClick");
-				mRecordButton.callOnClick();
+				mRecord.callOnClick();
 				break;
 			case STATE_RECODE_STARTED:
 				mState = STATE_RECODE_STARTED;

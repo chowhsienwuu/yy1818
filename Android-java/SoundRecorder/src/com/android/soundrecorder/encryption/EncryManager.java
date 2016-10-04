@@ -29,7 +29,6 @@ public class EncryManager {
             try {
                 file_de.createNewFile();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -39,7 +38,6 @@ public class EncryManager {
             try {
                 file_out.createNewFile();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -59,7 +57,6 @@ public class EncryManager {
         try {
             fis = new FileInputStream(file_in);
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -67,7 +64,6 @@ public class EncryManager {
         try {
             fos = new FileOutputStream(file_out);
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -85,14 +81,12 @@ public class EncryManager {
                 fos.write(buffer_in, 0, len);
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {
             try {
                 fis.close();
                 fos.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 return false;
             }
@@ -107,7 +101,6 @@ public class EncryManager {
         try {
             fis = new FileInputStream(file_in);
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -115,7 +108,6 @@ public class EncryManager {
         try {
             fos = new FileOutputStream(file_out);
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 //        byte[] test = new byte[0];
@@ -132,14 +124,12 @@ public class EncryManager {
                 fos.write(buffer_in, 0, len);
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }finally {
             try {
                 fis.close();
                 fos.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 return false;
             }
@@ -216,7 +206,6 @@ public class EncryManager {
         try {
             bytesOfMessage = passwd.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -224,7 +213,6 @@ public class EncryManager {
         try {
             md = MessageDigest.getInstance("SHA-512");
         } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         byte[] thedigest = md.digest(bytesOfMessage);

@@ -37,7 +37,6 @@ public class RecorderWav implements Runnable {
 	
 	public static final int ERROR_REACH_SIZE = 0X100;
 
-
 	private AudioRecord audioRecord;
 	private int channelConfiguration = AudioFormat.CHANNEL_IN_MONO; // mono
 	private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT; // pcm 16bit.
@@ -213,7 +212,6 @@ public class RecorderWav implements Runnable {
 //			mRecodOutputStream = new FileOutputStream(mRecodingFile);
 			mRecodRaf = new RandomAccessFile(mRecodingFile, "rws");
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -222,14 +220,12 @@ public class RecorderWav implements Runnable {
 //			mRecodOutputStream.write(getWavHeader(1));
 			mRecodRaf.write(getWavHeader(1));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		int getLen = 0; 
 		while (mState == RECORDING_STARTED || mState == RECORDING_PAUSE_STATE) {
 			getLen = audioRecord.read(mRecodBuffer, 0, bufferSizeInBytes);
@@ -242,7 +238,6 @@ public class RecorderWav implements Runnable {
 					mRecodRaf.write(mRecodBuffer, 0, getLen);
 					wavdatalen += getLen;
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -255,7 +250,6 @@ public class RecorderWav implements Runnable {
 					mRecodRaf.write(getWavHeader(wavdatalen));
 					mRecodRaf.seek(44 + wavdatalen);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -278,7 +272,6 @@ public class RecorderWav implements Runnable {
 //			mRecodOutputStream.close();
 			mRecodRaf.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -288,10 +281,8 @@ public class RecorderWav implements Runnable {
 			raf.write(getWavHeader(wavdatalen));
 			raf.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

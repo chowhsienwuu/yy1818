@@ -37,7 +37,7 @@ public class FileManager implements Runnable{
 	public static FileManager getInstance(){
 		return mInstance;
 	}
-	
+		
 	private void init(){
 		
 		File dir = new File(mWAVrootDir);
@@ -118,6 +118,19 @@ public class FileManager implements Runnable{
 		return getNewestFile();
 	}
 	
+	public boolean delFile(String filePath){
+		for (int i = 0; i < mFileList.size(); i++){
+			if (mFileList.get(i).getFilePath().equals(filePath)){
+				//check file status ?. and del it 
+				mFileList.get(i).delete();
+				mFileList.remove(i);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public void run() {
 		while (true){
@@ -128,7 +141,6 @@ public class FileManager implements Runnable{
 			try {
 				Thread.sleep(mSleepTime);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

@@ -37,14 +37,14 @@ public class DiskSpaceRecyle {
 			return false;
 		}
 		FileNode node = list.get(0);
-		if (node.getState() == FileNode.FILE_STATE_IDLE){
+		if (node.getState() == FileNode.FILE_STATE_IDLE) {
 			Log.i(TAG, "delteOlddestFile" + node);
 			node.delete();
 			list.remove(0); // just dele the first one.
-		}else {
+		} else {
 			Log.i(TAG, "delteOlddestFile false as file is using :" + node);
 		}
-	
+
 		return true;
 	}
 }

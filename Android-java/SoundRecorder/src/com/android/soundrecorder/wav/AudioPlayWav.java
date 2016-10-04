@@ -79,7 +79,6 @@ public class AudioPlayWav implements Runnable{
 		try {
 			msg.arg1 = (int)(mRaf.length() - 44) / BYTEPERSEC;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		msg.what = SoundRecorderActivity.STATE_PLAY_STARTED;
@@ -103,7 +102,6 @@ public class AudioPlayWav implements Runnable{
 				return false;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -114,7 +112,6 @@ public class AudioPlayWav implements Runnable{
 		try {
 			mRaf.seek(t_pos + 44);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -123,12 +120,10 @@ public class AudioPlayWav implements Runnable{
 	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		EncryManager em = new EncryManager(mPasswd);
 		try {
 			mRaf.skipBytes(44);
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -138,7 +133,6 @@ public class AudioPlayWav implements Runnable{
 				try {
 					len = mRaf.read(mbuffer);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -162,7 +156,6 @@ public class AudioPlayWav implements Runnable{
 		try {
 			return mRaf.getFilePointer() / BYTEPERSEC;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return 0L;
@@ -176,7 +169,6 @@ public class AudioPlayWav implements Runnable{
 		try {
 			mRaf.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

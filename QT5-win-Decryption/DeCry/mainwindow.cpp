@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->centralWidget->setLayout(ui->verticalLayout);
     ui->passwd->setEchoMode(QLineEdit::Password);
     memset(buffer_src_file, 0, 256);
     memset(buffer_src_file, 0, 256);

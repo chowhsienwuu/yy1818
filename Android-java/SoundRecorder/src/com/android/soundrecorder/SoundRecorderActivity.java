@@ -240,7 +240,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		}
 		
 		if (loop){ 
-			mLoopHandler.postDelayed(mUpdateTimer, 1000);
+			mLoopHandler.postDelayed(mUpdateTimer, 400);
 		}
 	}
 	

@@ -56,9 +56,9 @@ public class AudioPlayWav implements Runnable{
 		final int  minSize = AudioTrack.getMinBufferSize(sampleRate,
 				channelConfiguration, audioEncoding);
 	
-		mbuffer = new byte[minSize * 3];
+		mbuffer = new byte[40960];
 		mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
-				AudioFormat.CHANNEL_OUT_MONO, audioEncoding,  10240,
+				AudioFormat.CHANNEL_OUT_MONO, audioEncoding,  40960,
 				AudioTrack.MODE_STREAM);
 
 		mAudioTrack.setStereoVolume(1.0f, 1.0f);

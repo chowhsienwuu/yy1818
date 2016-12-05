@@ -15,39 +15,6 @@ import android.util.Log;
 
 
 public class EncryManager {
-    public static void main(String[] args){
-        EncryManager em = new EncryManager("123456");
-
-        File file_in = new File("d:\\203.mp4");
-        File file_out = new File("d:\\203.encry.mp4");
-        File file_de  = new File("d:\\203.de.mp4");
-        d("file_in" + file_in.exists());
-        d("md5sum : " + em.passwd2sha512("123456"));
-
-        if (file_de.exists()){
-            file_de.delete();
-            try {
-                file_de.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (file_out.exists()){
-            file_out.delete();
-            try {
-                file_out.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        d("time001:" + new Date());
-        em.encryptionFile(file_in, file_out, 44);
-        d("time002:" + new Date());
-        em.decryptionFile(file_out, file_de, 44);
-        d("time003:" + new Date());
-    }
 
     /*
      * i don encryption some byte len of head.
@@ -149,14 +116,20 @@ public class EncryManager {
 	private int mEnCryLen = 40960;
 	
 	public EncryManager(String passwd) {
-		if (passwd == null){
-			passwd = "";
+		Log.e("zxw", " passwd " + passwd);
+		if (passwd != null && passwd.length() != 0) {
+			mEnCryptionData = passwd2sha512(passwd);
+			for (int i = 0; i < mEnCryLen; i++) {
+				// mEnCryptionBigBuffer[i] = 101;
+				mEnCryptionBigBuffer[i] = mEnCryptionData[i % 64];
+			}
+		}else {
+			for (int i = 0; i < mEnCryLen; i++) {
+				// mEnCryptionBigBuffer[i] = 101;
+				mEnCryptionBigBuffer[i] = 0;
+			}
 		}
-		mEnCryptionData = passwd2sha512(passwd);
-		for (int i = 0; i < mEnCryLen; i++){
-//			mEnCryptionBigBuffer[i] = 101;
-			mEnCryptionBigBuffer[i] = mEnCryptionData[i % 64];
-		}
+
 	}
     
 	public void resetPos(){

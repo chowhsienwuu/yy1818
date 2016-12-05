@@ -132,11 +132,11 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	public void onClick(View button) {
 		switch (button.getId()) {
 		case R.id.recordButton:
-			if (mPasswdText.getEditableText().length() == 0){
-				Toast.makeText(this, "input the passwd to encryption",
-						Toast.LENGTH_LONG).show();
-				return;
-			}
+//			if (mPasswdText.getEditableText().length() == 0){
+//				Toast.makeText(this, "input the passwd to encryption",
+//						Toast.LENGTH_LONG).show();
+//				return;
+//			}
 			stopRecordForSafe();
 			stopPlayForSafe();
 			

@@ -16,6 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/initTime"
+            android:textColor="@android:color/holo_blue_dark"
             android:textSize="70dip" />
 
         <LinearLayout
@@ -40,13 +41,18 @@
     <SeekBar
         android:id="@+id/playseekbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content" 
+        android:background="@drawable/green" />
 
     <TextView
         android:id="@+id/statustext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/statustext" />
+        android:text="@string/statustext" 
+        android:background="@drawable/yellow"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="25dip" 
+        />
 
     <ImageView
         android:layout_width="match_parent"
@@ -58,6 +64,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1" 
+
         android:visibility="gone">
 
         <RelativeLayout
@@ -68,6 +75,7 @@
                 android:id="@+id/passwdEdit"
                 android:layout_width="match_parent"
                 android:layout_height="80dip"
+                android:background="@drawable/yellow"
                 android:inputType="textPassword"
                 android:singleLine="true"
                 android:text="@string/testpasswd" />
@@ -77,9 +85,11 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dip"
-        android:background="@android:drawable/title_bar"
+        android:background="@drawable/gradient_bg"
         android:gravity="center_horizontal"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:visibility="gone"
+         >
 
         <LinearLayout
             android:layout_width="wrap_content"

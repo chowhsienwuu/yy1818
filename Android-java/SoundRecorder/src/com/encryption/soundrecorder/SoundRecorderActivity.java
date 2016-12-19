@@ -12,6 +12,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -128,7 +129,34 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		}
 		mAudioPlayWav = null;
 	}
-	
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (mRecord == null || mPlayPause == null || mPlayNext == null
+				|| mPlayPrev == null || mPlayStop == null) {
+			return false;
+		}
+
+		if (keyCode == KeyEvent.KEYCODE_F7) {
+			// recodebutton
+			mRecord.callOnClick();
+		} else if (keyCode == KeyEvent.KEYCODE_F8) {
+			// playpause
+			mPlayPause.callOnClick();
+		} else if (keyCode == KeyEvent.KEYCODE_F9) {
+			// mPlayStop
+			mPlayStop.callOnClick();
+		} else if (keyCode == KeyEvent.KEYCODE_F10) {
+			// mPlayNext
+			mPlayNext.callOnClick();
+		} else if (keyCode == KeyEvent.KEYCODE_F11) {
+			// mPlayPrev
+			mPlayPrev.callOnClick();
+		}
+
+		return super.onKeyDown(keyCode, event);
+	}
+
 	public void onClick(View button) {
 		switch (button.getId()) {
 		case R.id.recordButton:

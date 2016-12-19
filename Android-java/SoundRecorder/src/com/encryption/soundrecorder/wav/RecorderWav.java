@@ -151,9 +151,7 @@ public class RecorderWav implements Runnable {
 	
 	private void scanFileAsync() {
 		Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-		File dir = new File(Environment.getExternalStorageDirectory()
-				.getAbsolutePath(), "WAV_RECODE");
-		scanIntent.setData(Uri.fromFile(dir));
+		scanIntent.setData(Uri.fromFile(mRecodingFile));
 		mContext.sendBroadcast(scanIntent);
 	}
 	
@@ -161,7 +159,7 @@ public class RecorderWav implements Runnable {
 		String name = FileManager.getInstance().genNewRecodFileName();
 		mRecodThread.setName(name);
 		mRecodThread.setPriority(Thread.MAX_PRIORITY);
-		mRecodingFile = new File(FileManager.getInstance().getWAVrootDir(), "/"	+ name);
+		mRecodingFile = new File(FileManager.getInstance().getWAVrootDir(), "/" + name);
 
 		mRecodRaf = new RandomAccessFile(mRecodingFile, "rws");
 		mRecodRaf.write(getWavHeader(1));

@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
@@ -16,7 +19,7 @@ public class FileManager implements Runnable{
 	
 	//private String mSdcardRootPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
 	private String mSdcardRootPath = "/sdcard" + "/";
-	private String mWAVrootDirPrefix = "/";
+	private String mWAVrootDirPrefix = "/WAV_RECODE";
 	private String mWAVrootDir = mSdcardRootPath + mWAVrootDirPrefix;
 	
 	private ArrayList<FileNode> mFileList = new ArrayList<FileNode>();
@@ -65,16 +68,37 @@ public class FileManager implements Runnable{
 	private void initFileList(File dir){
 		File[] files = dir.listFiles();
 		
-		for (File f: files){
-			FileNode filenode = new FileNode(f.getAbsolutePath(), FileNode.FILE_STATE_IDLE);
-			filenode.setLastModifyTime(f.lastModified());
-			mFileList.add(filenode);
+		for (File f : files) {
+			if (!f.isDirectory() && f.isFile()) {
+				FileNode filenode = new FileNode(f.getAbsolutePath(),
+						FileNode.FILE_STATE_IDLE);
+				filenode.setLastModifyTime(f.lastModified());
+				mFileList.add(filenode);
+			}
 		}
 		Collections.sort(mFileList, new SortByTime());
 		
 		for (int i = 0; i < mFileList.size(); i++){
 			Log.i(TAG, ".i " + mFileList.get(i));
 		}
+	}
+	
+	public void addWavRootMTP(Context context){
+		if (context == null){
+			return;
+		}
+		Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+		File f = new File(mWAVrootDir);
+		scanIntent.setData(Uri.fromFile(f));
+		context.sendBroadcast(scanIntent);
+	}
+	public void addWavFileMTP(Context context, File f){
+		if (context == null){
+			return;
+		}
+		Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+		scanIntent.setData(Uri.fromFile(f));
+		context.sendBroadcast(scanIntent);
 	}
 	
 	/*

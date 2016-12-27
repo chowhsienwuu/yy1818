@@ -71,7 +71,6 @@ public class RecorderWav implements Runnable {
 		audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				sampleRate, channelConfiguration, audioEncoding,
 				bufferSizeInBytes);
-//		audioRecord.
 		mBytePerSec = sampleRate * 1 * 2 ;//44100 * 1(mono) * 2(pcm16) =176400
 		mRecodBuffer = new byte[bufferSizeInBytes];
 		mRecodThread = new Thread(this);
@@ -149,21 +148,13 @@ public class RecorderWav implements Runnable {
 		}
 	}
 	
-	private void scanFileAsync() {
-		Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-		
-		File f = new File("/sdcard/" + mRecodingFile.getName());
-		scanIntent.setData(Uri.fromFile(f));
-		mContext.sendBroadcast(scanIntent);
-	}
 	
 	private void initFile() throws Exception {
 		String name = FileManager.getInstance().genNewRecodFileName();
 		mRecodThread.setName(name);
 		mRecodThread.setPriority(Thread.MAX_PRIORITY);
-		//mRecodingFile = new File(FileManager.getInstance().getWAVrootDir(), "/" + name);
-		mRecodingFile = new File("/sdcard", "/" + name);
-		
+		mRecodingFile = new File(FileManager.getInstance().getWAVrootDir(), "/" + name);
+
 		mRecodRaf = new RandomAccessFile(mRecodingFile, "rws");
 		mRecodRaf.write(getWavHeader(1));
 	}
@@ -213,7 +204,7 @@ public class RecorderWav implements Runnable {
 		}
 		
 		FileManager.getInstance().addFileNode(mRecodingFile);
-		scanFileAsync();
+		FileManager.getInstance().addWavFileMTP(mContext, mRecodingFile);
 		wavdatalen = 0;
 		
 		if (getState() == IDLE_STATE) {

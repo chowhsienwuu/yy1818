@@ -5,7 +5,9 @@ import java.io.File;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -61,6 +63,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 	public void onCreate(Bundle icycle) {
 		FileManager.getInstance();
 		super.onCreate(icycle);
+		FileManager.getInstance().addWavRootMTP(this);
 		Log.i(TAG, "onCreate");
 		setContentView(R.layout.main);
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -69,7 +72,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		initResourceRefs();
 		if (!misInUiloopRender) {
 			mLoopHandler.postDelayed(mUpdateTimer, 500);
-		}
+		}		
 	}
 
 	private void initResourceRefs() {

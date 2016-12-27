@@ -132,6 +132,7 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		Log.e("zxw", "..on key down " + keyCode + "." + event.getNumber());
 		if (mRecord == null || mPlayPause == null || mPlayNext == null
 				|| mPlayPrev == null || mPlayStop == null) {
 			return false;
@@ -140,18 +141,23 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		if (keyCode == KeyEvent.KEYCODE_F7) {
 			// recodebutton
 			mRecord.callOnClick();
+			Log.e("zxw", "get f7");
 		} else if (keyCode == KeyEvent.KEYCODE_F8) {
 			// playpause
 			mPlayPause.callOnClick();
+			Log.e("zxw", "get f8");
 		} else if (keyCode == KeyEvent.KEYCODE_F9) {
 			// mPlayStop
 			mPlayStop.callOnClick();
+			Log.e("zxw", "get f9");
 		} else if (keyCode == KeyEvent.KEYCODE_F10) {
 			// mPlayNext
 			mPlayNext.callOnClick();
+			Log.e("zxw", "get f10");
 		} else if (keyCode == KeyEvent.KEYCODE_F11) {
 			// mPlayPrev
 			mPlayPrev.callOnClick();
+			Log.e("zxw", "get f11");
 		}
 
 		return super.onKeyDown(keyCode, event);

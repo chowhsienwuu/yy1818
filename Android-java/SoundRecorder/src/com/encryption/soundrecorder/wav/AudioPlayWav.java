@@ -21,11 +21,11 @@ public class AudioPlayWav implements Runnable{
 	byte[] mbuffer = null;
 	private final int channelConfiguration = AudioFormat.CHANNEL_IN_MONO; // mono
 	private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT; // pcm 16bit.
-	private int sampleRate = 44100; // 4.41KHZ
+	private int sampleRate = 16000; // 4.41KHZ
 	private File mPlayFile = null;
 	private RandomAccessFile mRaf = null;
 	private Thread mPlayThread = null;
-	private static final int BYTEPERSEC = (44100 * 2 * 1);
+	private static final int BYTEPERSEC = (16000 * 2 * 1);
 	//play status
 	public static final int IDLE_STATE = 0;
 	public static final int PLAY_STARTED = 1;

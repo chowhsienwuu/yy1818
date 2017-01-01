@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.encryption.soundrecorder.file.FileManager;
+import com.encryption.soundrecorder.util.Fm1388Util;
 import com.encryption.soundrecorder.util.MiscUtil;
 import com.encryption.soundrecorder.wav.AudioPlayWav;
 import com.encryption.soundrecorder.wav.RecorderWav;
@@ -72,7 +73,8 @@ public class SoundRecorderActivity extends Activity implements Button.OnClickLis
 		initResourceRefs();
 		if (!misInUiloopRender) {
 			mLoopHandler.postDelayed(mUpdateTimer, 500);
-		}		
+		}
+		
 	}
 
 	private void initResourceRefs() {

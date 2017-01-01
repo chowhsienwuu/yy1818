@@ -18,6 +18,7 @@ import android.util.Log;
 import com.encryption.soundrecorder.SoundRecorderActivity;
 import com.encryption.soundrecorder.encryption.EncryManager;
 import com.encryption.soundrecorder.file.FileManager;
+import com.encryption.soundrecorder.util.Fm1388Util;
 
 public class RecorderWav implements Runnable {
 	private static final String TAG = "RecorderWav";
@@ -118,6 +119,8 @@ public class RecorderWav implements Runnable {
 	}
 	
 	public synchronized void startRecording() {
+		Fm1388Util.changeModeVr();
+		
 		Message msg = new Message();
 		try {
 			initFile();
@@ -137,6 +140,7 @@ public class RecorderWav implements Runnable {
 
 	public synchronized void stopRecording() {
 		try {
+			//audioRecord.
 			audioRecord.stop(); 
 			audioRecord.release();
 			setState(IDLE_STATE);

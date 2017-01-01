@@ -21,6 +21,7 @@
             android:name="SoundRecorderActivity"
             android:clearTaskOnLaunch="true"
             android:theme="@android:style/Theme.NoTitleBar"
+            android:launchMode="singleTask"         
             android:screenOrientation="unspecified" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

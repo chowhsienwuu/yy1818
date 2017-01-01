@@ -14,6 +14,7 @@ import android.util.Log;
 
 import com.encryption.soundrecorder.SoundRecorderActivity;
 import com.encryption.soundrecorder.encryption.EncryManager;
+import com.encryption.soundrecorder.util.Fm1388Util;
 
 public class AudioPlayWav implements Runnable{
 	private Handler mUiHandler = null;
@@ -67,6 +68,7 @@ public class AudioPlayWav implements Runnable{
 		if (!initFile()){
 			return ;
 		}
+		Fm1388Util.changeModeMP();
 		mPlayThread = new Thread(this);
 		mPlayThread.setName("playthread");
 		setState(PLAY_STARTED);

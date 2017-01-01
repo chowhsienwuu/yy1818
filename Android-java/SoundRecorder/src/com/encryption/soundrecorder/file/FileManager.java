@@ -19,7 +19,7 @@ public class FileManager implements Runnable{
 	
 	//private String mSdcardRootPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
 	private String mSdcardRootPath = "/sdcard" + "/";
-	private String mWAVrootDirPrefix = "/WAV_RECODE";
+	private String mWAVrootDirPrefix = "/";
 	private String mWAVrootDir = mSdcardRootPath + mWAVrootDirPrefix;
 	
 	private ArrayList<FileNode> mFileList = new ArrayList<FileNode>();
@@ -58,6 +58,7 @@ public class FileManager implements Runnable{
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
+		
 		initFileList(dir);
 		
 		mFileManagerThread = new Thread(this);
